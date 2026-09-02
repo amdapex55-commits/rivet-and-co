@@ -18,6 +18,7 @@ zero-runtime-cost — deploys to Cloudflare Pages as-is.
       product/, collections/, shop/ …  prerendered pages, one per route
       manifest.webmanifest, robots.txt, sitemap.xml, 404.html, .nojekyll
     tools/             dev only — never deployed
+      build-images.py  trims + normalises the photography to 2:3 JPEGs
       shell.html       the HTML shell every page is built from
       prerender.js     writes one real page per route
       serve.js         static server, mounts at /rivet-and-co/ like Pages does
@@ -98,9 +99,16 @@ favicon/logo upload, password, JSON export/import, factory reset).
 
 ## Where the images come from
 
-**Product shots are real photography** — the Rivet Jr detail pack, resized to
-900px JPEG in `public/assets/img/products/`. Three shots per style: waist front,
-fabric/rip detail, back waist.
+**Product shots are real photography** — the Rivet Jr detail pack in
+`public/assets/img/products/`, three shots per style: waist front, fabric/rip
+detail, back waist.
+
+Run `python3 tools/build-images.py` to rebuild them from
+`~/Desktop/Rivet-Jr-Product-Detail-Pack`. The source PNGs carry baked-in white
+margins of varying size, so the script trims those, samples each photo's own
+cream backdrop, and centres the result on an 800x1200 canvas of that colour.
+Every product image ends up exactly 2:3 and band-free, which is what lets the
+card grid stay even.
 
 Everything else — the hero, backgrounds, the favicon and OG art — is still
 generated. `fabric.js` builds every such shot

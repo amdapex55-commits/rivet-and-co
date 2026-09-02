@@ -112,8 +112,20 @@ tag on every product page. Adult fits stay marked "Coming soon".
 Triple-tap (or triple-click) the **RIVET & CO.** wordmark in the top-left within
 700ms. That reveals a password prompt — the gesture is discovery, not security.
 
-Default password: `rivet2026` — change it in **Admin → Settings → Security**.
+The shipped password is **not written down in this repository** — `store.js`
+carries only a salted hash of it. Change it in **Admin → Settings → Security**,
+which replaces that hash in your own browser only.
+
 Session lasts 60 minutes; five wrong attempts lock input for 60 seconds.
+
+A browser still holding a superseded shipped default is migrated to the current
+one on next use; a password you set yourself is never overwritten.
+
+Be clear-eyed about what this protects: the gate runs in the visitor's browser,
+so anyone willing to open devtools can walk past it regardless of the password.
+Hashing keeps the string out of the repo — worth doing if it resembles a password
+used anywhere else — but it is not access control. Real protection arrives with
+the server-side auth described below.
 
 `/admin` also works as a direct URL and is gated by the same password. It is
 `noindex,nofollow` and excluded in `robots.txt`.

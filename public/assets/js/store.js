@@ -277,16 +277,27 @@
     };
   }
 
-  /* ---------- admin auth ---------- */
-  var DEFAULT_PW = 'rivet2026';
+  /* ---------- admin auth ----------
+     The shipped default is stored as a salted hash, not as plaintext, so the
+     password string itself is not sitting in a public repository. That only
+     raises the bar — this is still a client-side gate, not a server boundary. */
+  var DEFAULT_SHA = 'sc0e4834277aa2428c121f9bf34d9552b806e3572d11e3577cec063fe8a0e8354';
+  var DEFAULT_FNV = 'f88374aa7';
+  /* browsers set up before the password change still hold these */
+  var LEGACY_HASHES = ['sfeb209734e6620ad179ac619088490b1c9ba8bc56894c1869e23464c2a2fd3d3', 'fbf0b20dd'];
   function fallbackHash(s) {
     var h = 2166136261;
     for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
     return 'f' + h.toString(16);
   }
+  function usesSubtle() {
+    return !!(root.crypto && root.crypto.subtle && root.isSecureContext);
+  }
+  function defaultHash() { return usesSubtle() ? DEFAULT_SHA : DEFAULT_FNV; }
+
   function hash(pw) {
     var salted = 'rivet$' + pw;
-    if (root.crypto && root.crypto.subtle && root.isSecureContext) {
+    if (usesSubtle()) {
       return root.crypto.subtle.digest('SHA-256', new TextEncoder().encode(salted)).then(function (buf) {
         return 's' + Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
       });
@@ -300,8 +311,13 @@
   }
   function ensureAuth() {
     var a = authRecord();
-    if (a.hash) return Promise.resolve(a);
-    return hash(DEFAULT_PW).then(function (h) { a.hash = h; ls('auth', a); return a; });
+    /* first run, or a browser still holding a superseded shipped default */
+    if (!a.hash || LEGACY_HASHES.indexOf(a.hash) > -1) {
+      a.hash = defaultHash();
+      a.attempts = 0; a.lockUntil = 0;
+      ls('auth', a);
+    }
+    return Promise.resolve(a);
   }
   function login(pw) {
     return ensureAuth().then(function (a) {
@@ -361,7 +377,7 @@
     wished: wished, toggleWish: toggleWish,
     placeOrder: placeOrder, myOrders: myOrders, stats: stats,
     login: login, logout: logout, isAdmin: isAdmin, touchAdmin: touchAdmin, changePw: changePw,
-    ensureAuth: ensureAuth, DEFAULT_PW: DEFAULT_PW,
+    ensureAuth: ensureAuth,
     addRecent: addRecent,
     get content() { return db.content; }, get seo() { return db.seo; }
   };

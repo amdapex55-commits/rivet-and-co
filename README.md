@@ -70,6 +70,37 @@ client; this exists so every URL returns 200 with its own metadata rather than
 falling through to `404.html`. **`tools/shell.html` is the source — never edit
 `public/index.html` directly, it is generated.**
 
+## What the customer gets
+
+- **Fit finder** (`/fit-finder`) — five questions (age, height, build, preferred
+  fit, use), then a recommended size and two or three in-stock styles with the
+  reason for each. Height beats age when they disagree, and it says so.
+- **Launch bundle** — any two pairs for Rs 4,999, priced in `store.js` from the
+  two cheapest units in the cart, applied automatically and shown as its own
+  line. The cart nudges when one more pair would trigger it.
+- **Product pages** carry a labelled gallery, "best for" chips, an age-confidence
+  line that updates with the selected size, "why this fit works" written per
+  block (not per product), inline WhatsApp sizing help and a proof strip.
+- **Homepage** runs hero → choose-the-fit (tabs swap the rail in place) → the
+  first drop → bundle → the make in three details → wash selector → lookbook →
+  parent trust → proof.
+
+## Denim as the interface
+
+Filters and fit tabs are stitched denim tags; size selectors are woven waist
+label tabs; the cart and fit-finder progress bars are runs of stitching; section
+dividers are seams that draw themselves in on scroll; the splash presses a brass
+rivet and runs a stitch line under the wordmark. Motion is craft, not decoration
+— everything respects `prefers-reduced-motion`.
+
+## Brand rules
+
+Brass (`--brass`) is reserved for action, price and highlight. Indigo carries the
+premium surfaces (hero, drop, fit reasoning, footer). Off-white is the shopping
+surface. The serif italic is used only for emotional words — "movement",
+"keeps up". Product names stay short; long copy appears only where it explains
+fit or care.
+
 ## Brand
 
 **Rivet & Co.** is the parent brand in the wordmark. **Rivet Jr** is the 4–14Y

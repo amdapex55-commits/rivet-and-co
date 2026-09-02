@@ -58,63 +58,63 @@
      prices are placeholders in the agreed PKR band and are editable in the admin. */
   var RAW = [
     {
-      slug:'ice-scrape-skinny-jean', name:'Ice Scrape Skinny Jean', fit:'skinny', wash:'ice-wash',
+      slug:'ice-scrape-skinny-jean', bestFor:['Outings', 'Daily wear'], name:'Ice Scrape Skinny Jean', fit:'skinny', wash:'ice-wash',
       price:3490, sale:null, stockPattern:'norm', featured:true,
       colls:['kids-4-14','skinny-fit','acid-wash','new-arrivals','best-sellers'],
       desc:'Ice-blue acid wash with hand-scraped rips at the thigh and knee. The lightest pair we make.',
       fabric:'10.5 oz cotton denim, 98% cotton / 2% elastane'
     },
     {
-      slug:'shadow-denim-jogger', name:'Shadow Denim Jogger', fit:'jogger', wash:'washed-black',
+      slug:'shadow-denim-jogger', bestFor:['Rough play', 'School', 'Daily wear'], name:'Shadow Denim Jogger', fit:'jogger', wash:'washed-black',
       price:3690, sale:3190, stockPattern:'deep', featured:true,
       colls:['kids-4-14','denim-joggers','dark-wash','best-sellers'],
       desc:'Washed black denim on a jogger block. Drawcord waist, ribbed cuff, no zip to fight with.',
       fabric:'11 oz stretch denim, 97% cotton / 3% elastane'
     },
     {
-      slug:'classic-indigo-slim-jean', name:'Classic Indigo Slim Jean', fit:'slim', wash:'dark-indigo',
+      slug:'classic-indigo-slim-jean', bestFor:['School', 'Daily wear', 'Outings'], name:'Classic Indigo Slim Jean', fit:'slim', wash:'dark-indigo',
       price:3890, sale:null, stockPattern:'deep', featured:true,
       colls:['kids-4-14','slim-fit','dark-wash','best-sellers'],
       desc:'The one every drawer needs. Deep indigo, clean whiskering, five-pocket construction.',
       fabric:'12 oz cotton denim, 99% cotton / 1% elastane'
     },
     {
-      slug:'slate-acid-skinny-jean', name:'Slate Acid Skinny Jean', fit:'skinny', wash:'slate-acid',
+      slug:'slate-acid-skinny-jean', bestFor:['Outings', 'Daily wear'], name:'Slate Acid Skinny Jean', fit:'skinny', wash:'slate-acid',
       price:3690, sale:null, stockPattern:'norm', featured:false,
       colls:['kids-4-14','skinny-fit','acid-wash','new-arrivals'],
       desc:'Grey acid wash, marbled by hand in small lots. No two pairs come out the same.',
       fabric:'11 oz cotton denim, 98% cotton / 2% elastane'
     },
     {
-      slug:'cloud-wash-slim-jean', name:'Cloud Wash Slim Jean', fit:'slim', wash:'ice-wash',
+      slug:'cloud-wash-slim-jean', bestFor:['Daily wear', 'Outings'], name:'Cloud Wash Slim Jean', fit:'slim', wash:'ice-wash',
       price:3590, sale:2890, stockPattern:'norm', featured:false,
       colls:['kids-4-14','slim-fit'],
       desc:'Pale blue, softened before it ships, no distressing. The easy pair for hot months.',
       fabric:'10.5 oz cotton denim, 98% cotton / 2% elastane'
     },
     {
-      slug:'black-fade-slim-jean', name:'Black Fade Slim Jean', fit:'slim', wash:'washed-black',
+      slug:'black-fade-slim-jean', bestFor:['School', 'Outings', 'Daily wear'], name:'Black Fade Slim Jean', fit:'slim', wash:'washed-black',
       price:3990, sale:null, stockPattern:'norm', featured:true,
       colls:['kids-4-14','slim-fit','dark-wash','best-sellers'],
       desc:'Black denim faded through the thigh with light abrasion. Reads smart, wears like a weekend.',
       fabric:'12 oz cotton denim, 99% cotton / 1% elastane'
     },
     {
-      slug:'storm-rip-skinny-jean', name:'Storm Rip Skinny Jean', fit:'skinny', wash:'mid-blue',
+      slug:'storm-rip-skinny-jean', bestFor:['Outings'], name:'Storm Rip Skinny Jean', fit:'skinny', wash:'mid-blue',
       price:4190, sale:null, stockPattern:'low', featured:false,
       colls:['kids-4-14','skinny-fit','acid-wash','new-arrivals'],
       desc:'Mid-blue acid with open rips at both knees, backed with tape so they stay rips.',
       fabric:'11 oz stretch denim, 97% cotton / 3% elastane'
     },
     {
-      slug:'charcoal-utility-straight-pant', name:'Charcoal Utility Straight Pant', fit:'straight', wash:'charcoal',
+      slug:'charcoal-utility-straight-pant', bestFor:['Rough play', 'School', 'Daily wear'], name:'Charcoal Utility Straight Pant', fit:'straight', wash:'charcoal',
       price:4690, sale:null, stockPattern:'norm', featured:false,
       colls:['kids-4-14','straight-fit','dark-wash'],
       desc:'Charcoal utility pant with a hammer loop and a straight leg. The most hard-wearing thing we cut.',
       fabric:'13 oz rigid cotton twill, 100% cotton'
     },
     {
-      slug:'deep-acid-straight-jean', name:'Deep Acid Straight Jean', fit:'straight', wash:'deep-acid',
+      slug:'deep-acid-straight-jean', bestFor:['Daily wear', 'Rough play', 'Outings'], name:'Deep Acid Straight Jean', fit:'straight', wash:'deep-acid',
       price:4290, sale:null, stockPattern:'norm', featured:false,
       colls:['kids-4-14','straight-fit','acid-wash','new-arrivals'],
       desc:'Deeper blue acid on a straight block. Room through the seat, clean at the hem.',
@@ -139,6 +139,7 @@
       stock: stockFor(seed, r.stockPattern),
       featured: r.featured,
       description: r.desc,
+      bestFor: r.bestFor || ['Daily wear'],
       fabric: r.fabric,
       care: 'Machine wash cold, inside out. Wash with like colours. Tumble dry low. Do not bleach. Warm iron if needed.',
       ageRange: '4–14Y',
@@ -219,7 +220,7 @@
   ];
 
   var CONTENT = {
-    heroEyebrow: 'Rivet Jr · 4–14Y now · Adult fits coming soon',
+    heroEyebrow: 'Rivet Jr · Kids 4–14Y',
     heroTitle: 'Built for <em>movement.</em>',
     heroSub: 'Everyday denim for kids 4–14, cut and finished in Pakistan. Made to be worn hard, not saved for occasions.',
     heroCta1: 'Shop Kids 4–14', heroCta1Href: '/collections/kids-4-14',
@@ -230,11 +231,58 @@
     editorialBody: 'One pattern block, tested on real kids, revised four times. Reinforced knees, bar-tacked stress points, and a waistband that still fits after a wash.',
     soonTitle: 'Men and Women. Next season.',
     soonBody: 'The same block, scaled up. Join the list and you will hear first.',
+    bundleActive: true,
+    bundleQty: 2,
+    bundlePrice: 4999,
+    bundleTitle: 'Two pairs, Rs 4,999',
+    bundleBody: 'Launch bundle. Mix any two styles, any two sizes — the discount applies itself in the cart.',
     freeShipOver: 4000,
     flatShipping: 250,
     whatsapp: '923001234567',
-    announcements: ['Free delivery over Rs 4,000','Cash on delivery nationwide','7-day exchange','4–14Y now · Adult fits coming soon']
+    announcements: ['Free delivery over Rs 4,000','Cash on delivery nationwide','7-day size exchange','WhatsApp us for sizing help']
   };
+
+  /* Why a leg shape works — written once per block, not per product. */
+  var FIT_NOTES = {
+    skinny: { line:'Closest through the thigh and ankle.',
+      body:'Cut close from hip to hem with elastane through the warp, so it moves instead of pinching. Best on slim and average builds — on a healthy build take the straight or relaxed block instead.',
+      build:['slim','average'] },
+    slim: { line:'Close, but not tight.',
+      body:'Follows the leg without gripping it. Enough room at the knee to sit cross-legged, tapered below so it stays clean over shoes. The safest first pair if you are unsure.',
+      build:['slim','average','healthy'] },
+    straight: { line:'The same width knee to hem.',
+      body:'A true straight leg with room through the seat and thigh. Sized to grow into rather than out of, and the easiest shape to get right without measuring.',
+      build:['average','healthy'] },
+    jogger: { line:'Denim that behaves like a track pant.',
+      body:'Drawcord waist, elastic cuff, no zip to fight with. Room through the seat for climbing and running, and it stays on when a size is between two.',
+      build:['slim','average','healthy'] },
+    relaxed: { line:'Widest through the thigh and seat.',
+      body:'Cut with the most room of any block. The right call for a healthy build or for buying a size ahead.',
+      build:['average','healthy'] },
+    tapered: { line:'Roomy up top, narrow at the ankle.',
+      body:'Room through the thigh with a clean taper from the knee, so it reads smart without restricting movement.',
+      build:['slim','average','healthy'] },
+    bootcut: { line:'A gentle flare from the knee.',
+      body:'Sits clean over school shoes and boots without dragging.',
+      build:['average','healthy'] }
+  };
+
+  var USES = [
+    { key:'school',  label:'School' },
+    { key:'daily',   label:'Daily wear' },
+    { key:'outings', label:'Outings' },
+    { key:'play',    label:'Rough play' }
+  ];
+
+  /* Confidence, not claims — every line here is checkable on the site. */
+  var PROOF = [
+    { icon:'flag',   title:'Made in Pakistan',        body:'Cut, sewn and washed locally in small lots.' },
+    { icon:'ruler',  title:'4–14Y tested sizing',     body:'Every size matched to real height and waist measurements.' },
+    { icon:'swap',   title:'Exchange if size is wrong', body:'7 days, unworn with tags. We arrange the pickup.' },
+    { icon:'chat',   title:'WhatsApp us before ordering', body:'Send an age and height and we will tell you the size.' },
+    { icon:'wash',   title:'Wash-tested fabric',      body:'Colour and shape held through repeated home washes.' },
+    { icon:'rivet',  title:'Reinforced stress points', body:'Bar-tacked pockets, fly and belt loops; knee panels inside.' }
+  ];
 
   var SEO = {
     title: 'Rivet & Co. — Denim that keeps up | Kids Jeans 4–14Y',
@@ -250,7 +298,7 @@
     KID_SIZES: KID_SIZES, MEN_SIZES: MEN_SIZES, WOMEN_SIZES: WOMEN_SIZES,
     SIZE_GUIDE: SIZE_GUIDE, COLLECTIONS: COLLECTIONS, COLOR_NAMES: COLOR_NAMES,
     PRODUCTS: PRODUCTS, CUSTOMERS: CUSTOMERS, ORDERS: ORDERS, COUPONS: COUPONS,
-    CONTENT: CONTENT, SEO: SEO,
+    CONTENT: CONTENT, SEO: SEO, FIT_NOTES: FIT_NOTES, PROOF: PROOF, USES: USES,
     FIT_LABELS: { skinny:'Skinny', slim:'Slim', straight:'Straight', tapered:'Tapered', relaxed:'Relaxed', jogger:'Jogger', bootcut:'Bootcut' },
     LINE: 'Rivet Jr'
   };

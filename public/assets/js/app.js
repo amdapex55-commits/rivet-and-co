@@ -22,6 +22,35 @@
   }
   function absUrl(path) { return location.origin + BASE + (path || '/'); }
 
+  /* Anchors are authored as "/shop" so the app reads the same at the domain
+     root. On a project site that path 404s if the browser — not the router —
+     follows it: open-in-new-tab, middle-click, copy-link, crawlers. So every
+     data-link href gets the base written into the DOM, and anything added
+     later is caught by the observer below. */
+  function fixLinks(scope) {
+    if (!BASE) return;
+    var nodes = (scope || doc).querySelectorAll('a[data-link]');
+    for (var i = 0; i < nodes.length; i++) {
+      var a = nodes[i], h = a.getAttribute('href');
+      if (!h || h.charAt(0) !== '/' || h.indexOf(BASE + '/') === 0 || h === BASE) continue;
+      a.setAttribute('href', BASE + h);
+    }
+  }
+  function watchLinks() {
+    if (!BASE || !root.MutationObserver) return;
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var added = recs[i].addedNodes;
+        for (var k = 0; k < added.length; k++) {
+          var n = added[k];
+          if (n.nodeType !== 1) continue;
+          if (n.matches && n.matches('a[data-link]')) fixLinks(n.parentNode || doc);
+          else if (n.querySelector && n.querySelector('a[data-link]')) fixLinks(n);
+        }
+      }
+    }).observe(doc.body, { childList: true, subtree: true });
+  }
+
   /* ---------------- routes ---------------- */
   var ROUTES = [
     [/^\/$/,                        function () { return P.home(); }],
@@ -33,6 +62,7 @@
     [/^\/checkout$/,                function () { return P.checkout(); }],
     [/^\/order\/([\w-]+)$/,         function (m) { return P.orderConfirmed({ params: { id: m[1] } }); }],
     [/^\/account$/,                 function () { return P.account(); }],
+    [/^\/fit-finder$/,              function () { return P.fitFinder(); }],
     [/^\/size-guide$/,              function () { return P.sizeGuide(); }],
     [/^\/shipping-returns$/,        function () { return P.shipping(); }],
     [/^\/about$/,                   function () { return P.about(); }],
@@ -82,6 +112,7 @@
     $('#wa').hidden = !!page.admin;
 
     main.innerHTML = page.html;
+    fixLinks(doc);
     applySEO(page);
     if (page.mount) page.mount(main);
     U.refreshCounts();
@@ -109,10 +140,13 @@
     var a = e.target.closest('a[data-link]');
     if (!a) return;
     var href = a.getAttribute('href');
-    if (!href || href.charAt(0) !== '/' || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
+    if (!href || href.charAt(0) !== '/' || e.metaKey || e.ctrlKey || e.shiftKey ||
+        e.button === 1 || a.target === '_blank') return;
+    var p = a.pathname || href;
+    if (BASE && p.indexOf(BASE) === 0) p = p.slice(BASE.length) || '/';
     e.preventDefault();
     U.closeOverlay();
-    Router.go(href);
+    Router.go(p + (a.search || ''));
   });
 
   /* ---------------- head / SEO ---------------- */
@@ -175,14 +209,29 @@
       var l = doc.createElement('link'); l.rel = 'icon'; l.href = b.favicon;
       doc.head.appendChild(l);
     }
-    var tick = $('.hdr__ticker div');
+    var tick = $('.hdr__ticker__in');
     if (tick && c.announcements && c.announcements.length) {
-      var items = c.announcements.concat(c.announcements)
-        .map(function (a) { return '<span>' + U.esc(a) + '</span>'; }).join('');
-      tick.innerHTML = items;
+      tick.innerHTML = c.announcements
+        .map(function (a, i) { return '<span class="' + (i ? '' : 'is-on') + '">' + U.esc(a) + '</span>'; }).join('');
+      startTicker();
     }
     var wa = $('#wa');
     if (wa) wa.href = 'https://wa.me/' + c.whatsapp + '?text=' + encodeURIComponent('Hi Rivet & Co., I need help with sizing');
+  }
+
+  /* ---------------- announcement rotator ---------------- */
+  var tickerTimer = null;
+  function startTicker() {
+    clearInterval(tickerTimer);
+    var items = $$('.hdr__ticker span');
+    if (items.length < 2) return;
+    var i = 0;
+    tickerTimer = setInterval(function () {
+      if (doc.hidden) return;
+      items[i].classList.remove('is-on');
+      i = (i + 1) % items.length;
+      items[i].classList.add('is-on');
+    }, 4200);
   }
 
   /* ---------------- nav state ---------------- */
@@ -216,6 +265,14 @@
       if (routePath() === '/wishlist') setTimeout(function () { Router.refresh(); }, 260);
       return;
     }
+    var sz = e.target.closest('[data-sizes]');
+    if (sz) {
+      e.preventDefault();
+      var c = sz.closest('.card');
+      var open = c.classList.toggle('is-open');
+      sz.setAttribute('aria-expanded', String(open));
+      return;
+    }
     var q = e.target.closest('[data-quick]');
     if (q) { e.preventDefault(); U.quickAdd(q.dataset.quick); return; }
     var sg = e.target.closest('[data-sizeguide]');
@@ -240,11 +297,23 @@
     $('#bn-search').addEventListener('click', U.openSearch);
     $('#btn-menu').addEventListener('click', U.openNav);
 
-    var last = 0, hdr = $('#hdr');
-    root.addEventListener('scroll', function () {
+    var last = 0, hdr = $('#hdr'), wa = $('#wa'), ticking = false;
+    function onScroll() {
       var y = root.scrollY;
       hdr.classList.toggle('is-stuck', y > 8);
+      if (wa) {
+        var buy = $('.stickybuy.is-on');
+        var down = y > last + 4 && y > 220;
+        var up = y < last - 4;
+        if (buy) wa.classList.add('is-tucked');
+        else if (down) wa.classList.add('is-tucked');
+        else if (up || y < 120) wa.classList.remove('is-tucked');
+      }
       last = y;
+      ticking = false;
+    }
+    root.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
     }, { passive: true });
 
     St.on('cart', function () { U.refreshCounts(); U.renderCart(); });
@@ -285,8 +354,11 @@
 
     paintChrome();
     U.renderFooter();
+    fixLinks(doc);
+    watchLinks();
     wireHeader();
     A.wireGesture();
+    U.wireCardPeek();
     render();
     splash();
 

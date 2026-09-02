@@ -120,6 +120,10 @@ const statics = [
     'Every Rivet Jr style, 4Y to 14Y. Filter by age, fit, wash and price. Prices in PKR, delivered across Pakistan.',
     '<div class="wrap" style="padding-block:24px"><p class="eyebrow">' + esc(S.LINE) + '</p><h1 class="h-lg">All Denim</h1><ul style="margin-top:16px">' +
     S.PRODUCTS.map(p => '<li><a href="product/' + p.slug + '/">' + esc(p.name) + ' — ' + pkr(priceOf(p)) + '</a></li>').join('') + '</ul></div>'],
+  ['/fit-finder', 'Fit Finder — get the size right first time | Rivet & Co.',
+    'Answer five quick questions about age, height, build and use, and we will recommend the right Rivet Jr size and two or three styles.',
+    '<div class="wrap" style="padding-block:24px"><p class="eyebrow">' + esc(S.LINE) + '</p><h1 class="h-lg">Fit finder</h1>' +
+    '<p>Five questions, about thirty seconds. We will tell you the size and the two or three pairs worth buying.</p></div>'],
   ['/size-guide', 'Size guide — Kids 4–14Y | Rivet & Co.',
     'Rivet Jr kids denim size guide: age, height, waist and inseam in centimetres for 4Y to 14Y.',
     '<div class="wrap" style="padding-block:24px"><h1 class="h-lg">Size guide</h1><table><thead><tr><th>Size</th><th>Age</th><th>Height</th><th>Waist</th><th>Inseam</th></tr></thead><tbody>' +

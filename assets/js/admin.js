@@ -41,24 +41,49 @@
     });
   }
 
-  /* triple-tap the wordmark */
+  /* Triple-tap the wordmark.
+     The window is measured from the PREVIOUS tap, not the first one — three
+     deliberate taps are ~350-450ms apart, which never fit inside a single
+     700ms window counted from tap one. */
+  var TAP_GAP = 900;
   function wireGesture() {
-    var taps = [], wm = $('#wordmark');
+    var count = 0, last = 0, wm = $('#wordmark');
     if (!wm) return;
     wm.addEventListener('click', function (e) {
       var now = Date.now();
-      taps = taps.filter(function (t) { return now - t < 700; });
-      taps.push(now);
+      count = (now - last < TAP_GAP) ? count + 1 : 1;
+      last = now;
       wm.classList.remove('tapping'); void wm.offsetWidth; wm.classList.add('tapping');
-      if (taps.length >= 3) {
+      if (count >= 3) {
         /* stop the global data-link handler from navigating home and
            closing the modal we are about to open */
         e.preventDefault(); e.stopPropagation();
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-        taps = [];
-        if (St.isAdmin()) root.Router.go('/admin'); else loginModal('/admin');
+        count = 0;
+        rivetPulse(wm, function () {
+          if (St.isAdmin()) root.Router.go('/admin'); else loginModal('/admin');
+        });
       }
     });
+  }
+
+  /* a brass rivet presses in over the wordmark before the prompt appears */
+  function rivetPulse(el, done) {
+    var b = el.getBoundingClientRect();
+    var n = doc.createElement('div');
+    n.className = 'rivetpulse';
+    n.style.left = (b.left + b.width / 2) + 'px';
+    n.style.top = (b.top + b.height / 2) + 'px';
+    n.innerHTML = '<span class="rivetpulse__ring"></span>' +
+      '<svg viewBox="0 0 64 64" width="34" height="34" aria-hidden="true">' +
+      '<defs><radialGradient id="rp" cx="34%" cy="28%">' +
+      '<stop offset="0" stop-color="#F5D2A4"/><stop offset="52%" stop-color="#B87333"/><stop offset="100%" stop-color="#6E3D13"/>' +
+      '</radialGradient></defs>' +
+      '<circle cx="32" cy="32" r="26" fill="url(#rp)"/>' +
+      '<circle cx="32" cy="32" r="15" fill="none" stroke="#F6EAD9" stroke-opacity=".5" stroke-width="2.4"/>' +
+      '<circle cx="32" cy="32" r="6.5" fill="#8A5423"/></svg>';
+    doc.body.appendChild(n);
+    setTimeout(function () { n.remove(); done(); }, 480);
   }
 
   /* ---------------- gate ---------------- */

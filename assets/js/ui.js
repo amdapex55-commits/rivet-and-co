@@ -110,37 +110,82 @@
     var imgs = St.images(p), out = St.totalStock(p) === 0;
     var price = St.priceOf(p), off = St.discountPct(p);
     var isNew = (p.collections || []).indexOf('new-arrivals') > -1;
-    var low = !out && St.totalStock(p) <= 8;
+    var isBest = (p.collections || []).indexOf('best-sellers') > -1;
     var sizes = S.KID_SIZES;
+    var inStock = sizes.filter(function (s) { return (+p.stock[s] || 0) > 0; });
     var href = '/product/' + p.slug;
-    var badges = '<span class="badge badge--fit">' + esc(fitLabel(p.fit)) + '</span>';
-    if (out) badges += '<span class="badge badge--out">Sold out</span>';
-    else if (off) badges += '<span class="badge badge--sale">' + off + '% off</span>';
-    else if (isNew) badges += '<span class="badge badge--new">New</span>';
-    else if (low) badges += '<span class="badge badge--low">Low stock</span>';
+
+    /* One badge, not five. Strongest signal wins. */
+    var badge = '';
+    if (out)          badge = '<span class="badge badge--out">Sold out</span>';
+    else if (off)     badge = '<span class="badge badge--sale">' + off + '% off</span>';
+    else if (isBest)  badge = '<span class="badge badge--best">Bestseller</span>';
+    else if (isNew)   badge = '<span class="badge badge--new">New</span>';
 
     return '<article class="card' + (out ? ' is-out' : '') + '" data-slug="' + esc(p.slug) + '">' +
       '<div class="card__media">' +
         '<a class="card__link" href="' + href + '" data-link tabindex="-1" aria-hidden="true">' +
-          '<img class="a" src="' + imgs[0] + '" alt="" loading="lazy" decoding="async" width="900" height="1200">' +
-          '<img class="b" src="' + imgs[1] + '" alt="" loading="lazy" decoding="async" width="900" height="1200">' +
+          '<img class="a" src="' + imgs[0] + '" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<img class="b" src="' + imgs[1] + '" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
         '</a>' +
-        '<div class="card__badges">' + badges + '</div>' +
+        (badge ? '<div class="card__badges">' + badge + '</div>' : '') +
         '<button class="card__wish' + (St.wished(p.id) ? ' is-on' : '') + '" data-wish="' + esc(p.id) + '" ' +
           'aria-label="' + (St.wished(p.id) ? 'Remove ' : 'Save ') + esc(p.name) + ' to wishlist" aria-pressed="' + St.wished(p.id) + '">' + iconHeart(St.wished(p.id)) + '</button>' +
         (out ? '' : '<div class="card__quick"><button class="btn btn--sm" data-quick="' + esc(p.slug) + '">Quick add</button></div>') +
       '</div>' +
       '<div class="card__body">' +
         '<a href="' + href + '" data-link><h3 class="card__name">' + esc(p.name) + '</h3></a>' +
-        '<p class="card__meta">' + esc(washLabel(p.wash)) + ' · ' + esc(p.ageRange) + '</p>' +
+        '<p class="card__meta">' + esc(fitLabel(p.fit)) + ' · ' + esc(washLabel(p.wash)) + '</p>' +
         '<div class="card__price"><b>' + St.pkr(price) + '</b>' +
-          (p.salePrice ? '<s>' + St.pkr(p.price) + '</s><span class="off">−' + off + '%</span>' : '') +
+          (p.salePrice ? '<s>' + St.pkr(p.price) + '</s>' : '') +
         '</div>' +
-        (opts.nosizes ? '' : '<div class="card__sizes">' + sizes.map(function (s) {
-          return '<span class="' + ((+p.stock[s] || 0) > 0 ? '' : 'off') + '">' + s + '</span>';
-        }).join('') + '</div>') +
+        (opts.nosizes || out ? '' :
+          '<button class="card__sizetoggle" data-sizes aria-expanded="false">' +
+            inStock.length + ' size' + (inStock.length === 1 ? '' : 's') +
+            '<svg viewBox="0 0 12 8" width="9" height="7" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>' +
+          '</button>' +
+          '<div class="card__sizes">' + sizes.map(function (x) {
+            return '<span class="' + ((+p.stock[x] || 0) > 0 ? '' : 'off') + '">' + x + '</span>';
+          }).join('') + '</div>') +
       '</div>' +
     '</article>';
+  }
+
+  /* Press-and-hold peeks the second shot on touch, without eating the tap. */
+  function wireCardPeek() {
+    var start = function (e) {
+      var c = e.target.closest && e.target.closest('.card');
+      if (c) c.classList.add('peek');
+    };
+    var end = function () {
+      $$('.card.peek').forEach(function (c) { c.classList.remove('peek'); });
+    };
+    doc.addEventListener('touchstart', start, { passive: true });
+    doc.addEventListener('touchend', end, { passive: true });
+    doc.addEventListener('touchcancel', end, { passive: true });
+  }
+
+  /* brass rivet + tick, popped at the button that was pressed */
+  function rivetBurst(el) {
+    if (!el || !el.getBoundingClientRect) return;
+    var b = el.getBoundingClientRect();
+    var n = doc.createElement('div');
+    n.className = 'burst';
+    n.style.left = (b.left + b.width / 2) + 'px';
+    n.style.top = (b.top + b.height / 2) + 'px';
+    n.innerHTML = '<span class="burst__ring"></span>' +
+      '<svg viewBox="0 0 48 48" width="34" height="34" aria-hidden="true">' +
+      '<defs><radialGradient id="bg1" cx="34%" cy="28%">' +
+      '<stop offset="0" stop-color="#F5D2A4"/><stop offset="55%" stop-color="#B87333"/><stop offset="100%" stop-color="#6E3D13"/>' +
+      '</radialGradient></defs>' +
+      '<circle cx="24" cy="24" r="20" fill="url(#bg1)"/>' +
+      '<path d="m15 24.5 6 6 12-12" fill="none" stroke="#FCF3E6" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+    doc.body.appendChild(n);
+    $$('[data-cart-count]').forEach(function (d) {
+      d.classList.remove('bump'); void d.offsetWidth; d.classList.add('bump');
+    });
+    setTimeout(function () { n.remove(); }, 700);
   }
 
   function skeletonGrid(n) {
@@ -196,7 +241,7 @@
       }
       if (e.target.closest('[data-qa-add]') && chosen) {
         var r = St.addToCart(p, chosen, null, 1);
-        if (r.ok) { closeOverlay(); toast('Added <b>' + esc(p.name) + '</b> · ' + chosen); setTimeout(openCart, 380); }
+        if (r.ok) { rivetBurst(e.target.closest('[data-qa-add]')); closeOverlay(); toast('Added <b>' + esc(p.name) + '</b> · ' + chosen); setTimeout(openCart, 420); }
         else toast(r.msg, 'err');
       }
     });
@@ -223,11 +268,17 @@
       return { body: emptyState(ICONS.bag, 'Your cart is empty', 'Nothing here yet. Start with the fits that keep selling out.', 'Shop best sellers', '/collections/best-sellers'), foot: '' };
     }
     var body = '';
+    var pct = Math.min(100, Math.round((t.sub / St.content.freeShipOver) * 100));
     if (t.toFree > 0) {
       body += '<div class="shipbar"><p>Rs ' + t.toFree.toLocaleString('en-PK') + ' away from <b>free delivery</b></p>' +
-        '<div><i style="width:' + Math.min(100, (t.sub / St.content.freeShipOver) * 100) + '%"></i></div></div>';
+        '<div><i style="width:0" data-w="' + pct + '"></i></div></div>';
     } else {
-      body += '<div class="shipbar"><p><b>Free delivery</b> unlocked on this order</p><div><i style="width:100%"></i></div></div>';
+      body += '<div class="shipbar is-done"><p><b>Free delivery</b> unlocked on this order</p><div><i style="width:0" data-w="100"></i></div></div>';
+    }
+    if (St.content.bundleActive && t.bundleShort > 0) {
+      body += '<a class="nudge" href="/shop" data-link>' +
+        '<b>Add ' + t.bundleShort + ' more</b> for the ' + St.pkr(St.content.bundlePrice) + ' two-pair bundle' +
+        '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></a>';
     }
     body += lines.map(function (l) {
       var p = St.productById(l.id);
@@ -249,13 +300,20 @@
       (t.err ? '<p class="small" style="color:var(--err);margin:-6px 0 12px">' + esc(t.err) + '</p>' : '') +
       '<div class="sums">' +
         '<div><span>Subtotal</span><span>' + St.pkr(t.sub) + '</span></div>' +
-        (t.discount ? '<div class="disc"><span>Discount</span><span>−' + St.pkr(t.discount) + '</span></div>' : '') +
+        (t.bundle ? '<div class="disc"><span>' + esc(St.content.bundleTitle) + '</span><span>−' + St.pkr(t.bundle) + '</span></div>' : '') +
+        (t.discount - t.bundle > 0 ? '<div class="disc"><span>Discount</span><span>−' + St.pkr(t.discount - t.bundle) + '</span></div>' : '') +
         '<div><span>Delivery</span><span>' + (t.shipping ? St.pkr(t.shipping) : 'Free') + '</span></div>' +
         '<div class="tot"><span>Total</span><span>' + St.pkr(t.total) + '</span></div>' +
       '</div>' +
       '<a class="btn btn--block" href="/checkout" data-link data-checkout>Checkout · ' + St.pkr(t.total) + '</a>' +
       '<p class="small dim" style="text-align:center;margin-top:10px">Cash on delivery available nationwide</p>';
     return { body: body, foot: foot };
+  }
+
+  function growBars(scope) {
+    requestAnimationFrame(function () {
+      $$('.shipbar i[data-w]', scope).forEach(function (n) { n.style.width = n.dataset.w + '%'; });
+    });
   }
 
   function renderCart() {
@@ -266,6 +324,7 @@
     var f = $('.ov__foot', el);
     if (c.foot) { f.hidden = false; f.innerHTML = c.foot; } else { f.hidden = true; f.innerHTML = ''; }
     $('#cart-title', el).textContent = 'Cart (' + St.cartCount() + ')';
+    growBars(el);
   }
 
   function openCart() {
@@ -275,6 +334,7 @@
       '<div class="ov__body">' + c.body + '</div>' +
       '<div class="ov__foot"' + (c.foot ? '' : ' hidden') + '>' + c.foot + '</div>';
     openOverlay(el);
+    growBars(el);
     el.onclick = function (e) {
       var line = e.target.closest('.line'), key = line && line.dataset.key;
       var q = e.target.closest('[data-qty]');
@@ -311,6 +371,7 @@
       '<div class="navd">' +
         '<a href="/shop" data-link><span>All denim</span></a>' +
         '<a href="/collections/new-arrivals" data-link><span>New arrivals</span></a>' +
+        '<a href="/fit-finder" data-link><span>Fit finder</span><small>New</small></a>' +
         '<h4>Collections</h4><div class="sub">' + colls + '</div>' +
         '<h4>Coming soon</h4>' +
         '<a href="/shop?gender=men" data-link><span>Men</span><small>Soon</small></a>' +
@@ -415,6 +476,7 @@
           return '<li><a href="/collections/' + x.slug + '" data-link>' + esc(x.title) + '</a></li>'; }).join('') + '</ul></div>' +
         '<div><h4>Coming soon</h4><ul><li><a href="/shop?gender=men" data-link>Men</a></li><li><a href="/shop?gender=women" data-link>Women</a></li></ul></div>' +
         '<div><h4>Help</h4><ul>' +
+          '<li><a href="/fit-finder" data-link>Fit finder</a></li>' +
           '<li><a href="/size-guide" data-link>Size guide</a></li>' +
           '<li><a href="/shipping-returns" data-link>Delivery &amp; returns</a></li>' +
           '<li><a href="https://wa.me/' + esc(c.whatsapp) + '" target="_blank" rel="noopener">WhatsApp us</a></li>' +
@@ -432,6 +494,7 @@
     quickAdd: quickAdd, sizeGuide: sizeGuide, openCart: openCart, renderCart: renderCart, openNav: openNav,
     openSearch: openSearch, refreshCounts: refreshCounts, observeReveals: observeReveals,
     renderFooter: renderFooter, iconX: iconX, iconHeart: iconHeart, fitLabel: fitLabel, washLabel: washLabel,
+    rivetBurst: rivetBurst, wireCardPeek: wireCardPeek, growBars: growBars,
     currentCoupon: currentCoupon, setCoupon: setCoupon
   };
 })(window, document);

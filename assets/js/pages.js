@@ -23,141 +23,245 @@
   }
 
   /* ============================ HOME ============================ */
+  var WASH_SHOTS = {
+    'ice-wash':     'assets/img/products/ice-scrape-skinny-jean-1.jpg',
+    'dark-indigo':  'assets/img/products/classic-indigo-slim-jean-1.jpg',
+    'washed-black': 'assets/img/products/black-fade-slim-jean-1.jpg',
+    'slate-acid':   'assets/img/products/slate-acid-skinny-jean-1.jpg',
+    'mid-blue':     'assets/img/products/storm-rip-skinny-jean-1.jpg',
+    'deep-acid':    'assets/img/products/deep-acid-straight-jean-1.jpg',
+    'charcoal':     'assets/img/products/charcoal-utility-straight-pant-1.jpg'
+  };
+
+  function seam(id) {
+    return '<div class="seam rv" data-seam aria-hidden="true">' +
+      '<svg viewBox="0 0 1200 16" preserveAspectRatio="none">' +
+        '<path d="M0 8 H1200" fill="none" stroke="var(--line)" stroke-width="1"/>' +
+        '<path class="seam__st" d="M0 5 H1200" fill="none" stroke="#C98A4B" stroke-width="2.2" stroke-dasharray="13 10" stroke-linecap="round"/>' +
+        '<path class="seam__st seam__st--2" d="M0 11 H1200" fill="none" stroke="#C98A4B" stroke-width="2.2" stroke-dasharray="13 10" stroke-linecap="round" opacity=".55"/>' +
+      '</svg></div>';
+  }
+
   function home() {
     var c = St.content;
-    var newest = St.query({ collection: 'new-arrivals', sort: 'new' }).slice(0, 8);
-    var best = St.query({ collection: 'best-sellers', sort: 'best' }).slice(0, 6);
-    var fits = [
-      { fit: 'skinny',   img: 'assets/img/products/ice-scrape-skinny-jean-1.jpg',          note: 'Closest leg' },
-      { fit: 'slim',     img: 'assets/img/products/classic-indigo-slim-jean-1.jpg',        note: 'Close, not tight' },
-      { fit: 'straight', img: 'assets/img/products/charcoal-utility-straight-pant-1.jpg',  note: 'The everyday leg' },
-      { fit: 'jogger',   img: 'assets/img/products/shadow-denim-jogger-1.jpg',             note: 'Elastic hem' }
-    ];
-    var washes = [
-      { key: 'dark-wash', img: 'assets/img/products/classic-indigo-slim-jean-1.jpg', label: 'Dark Wash' },
-      { key: 'acid-wash', img: 'assets/img/products/slate-acid-skinny-jean-2.jpg',   label: 'Acid Wash' },
-      { key: 'slim-fit',  img: 'assets/img/products/cloud-wash-slim-jean-1.jpg',     label: 'Light Wash' }
-    ];
+    var all = St.query({ sort: 'featured' });
+    var best = St.query({ collection: 'best-sellers', sort: 'best' });
+    var heroFront = St.product('ice-scrape-skinny-jean') || all[0];
+    var heroBack = St.product('classic-indigo-slim-jean') || all[1] || all[0];
+
+    var fitKeys = ['skinny', 'slim', 'straight', 'jogger'];
+    var washOrder = ['ice-wash', 'dark-indigo', 'washed-black', 'slate-acid', 'mid-blue', 'deep-acid', 'charcoal'];
+    function washChip(k) {
+      return '<a class="washchip" href="/shop?wash=' + k + '" data-link>' +
+        '<img src="' + WASH_SHOTS[k] + '" alt="' + esc(F.washName(k)) + ' kids denim" loading="lazy" decoding="async" width="800" height="1200">' +
+        '<span><i style="background:' + F.washColor(k) + '"></i>' + esc(F.washName(k)) + '</span></a>';
+    }
+    var washTrack = washOrder.map(washChip).join('');
+
+    /* lookbook: the detail frames, not another product grid */
+    var look = all.slice(0, 6).map(function (p, i) {
+      var imgs = St.images(p);
+      return '<a class="lb__tile' + (i === 0 ? ' lb__tile--wide' : '') + '" href="/product/' + esc(p.slug) + '" data-link>' +
+        '<img src="' + imgs[i % 2 === 0 ? 1 : 2] + '" alt="' + esc(p.name) + ' detail" loading="lazy" decoding="async" width="800" height="1200">' +
+        '<span>' + esc(p.name) + '</span></a>';
+    }).join('');
 
     var html =
-    /* --- first screen: brand + product mood --- */
+    /* ---------- hero: mood, one CTA ---------- */
     '<section class="hero">' +
-      '<div class="hero__media">' + img({ shot: 'texture', wash: c.heroWash, seed: 11 }, '', '', 1600, 1000) + '</div>' +
+      '<div class="hero__media" data-par="0.28">' + img({ shot: 'texture', wash: c.heroWash, seed: 11, seam: false }, '', '', 1600, 1000) + '</div>' +
+      '<div class="hero__seam" data-par="0.62" aria-hidden="true">' +
+        '<svg viewBox="0 0 400 900" preserveAspectRatio="none">' +
+          '<path class="hero__stitch" d="M292 -40 L120 940" stroke="rgba(216,166,110,.55)" stroke-width="2.5" stroke-dasharray="14 11" fill="none"/>' +
+          '<path class="hero__stitch hero__stitch--2" d="M316 -40 L144 940" stroke="rgba(216,166,110,.55)" stroke-width="2.5" stroke-dasharray="14 11" fill="none"/>' +
+          '<path d="M304 -40 L132 940" stroke="rgba(255,255,255,.07)" stroke-width="26" fill="none"/>' +
+        '</svg>' +
+      '</div>' +
       '<div class="wrap"><div class="hero__in">' +
-        '<p class="eyebrow hero__eyebrow"><i></i>' + esc(c.heroEyebrow) + '</p>' +
-        '<h1 class="h-xl">' + c.heroTitle + '</h1>' +
-        '<p class="hero__sub">' + esc(c.heroSub) + '</p>' +
-        '<div class="hero__cta">' +
-          '<a class="btn btn--light" href="' + esc(c.heroCta1Href) + '" data-link>' + esc(c.heroCta1) + '</a>' +
-          '<a class="btn btn--ghost" style="--fg-b:#fff;border-color:rgba(246,243,237,.34)" href="' + esc(c.heroCta2Href) + '" data-link>' + esc(c.heroCta2) + '</a>' +
+        '<div class="hero__copy">' +
+          '<p class="eyebrow hero__eyebrow"><i></i>' + esc(c.heroEyebrow) + '</p>' +
+          '<h1 class="h-xl">' + c.heroTitle + '</h1>' +
+          '<p class="hero__sub">' + esc(c.heroSub) + '</p>' +
+          '<div class="hero__cta">' +
+            '<a class="btn btn--light" href="/shop" data-link>Shop the first drop</a>' +
+          '</div>' +
+          '<a class="herolink" href="/fit-finder" data-link>Not sure of the size? Try the fit finder →</a>' +
+          '<div class="hero__meta">' +
+            '<div>Sizes<b>4Y – 14Y</b></div>' +
+            '<div>Fabric<b>10.5–13 oz</b></div>' +
+            '<div>Delivery<b>Nationwide COD</b></div>' +
+          '</div>' +
         '</div>' +
-        '<div class="hero__meta">' +
-          '<div>Sizes<b>4Y – 14Y</b></div>' +
-          '<div>Fabric<b>10.5–12.5 oz</b></div>' +
-          '<div>Delivery<b>Nationwide COD</b></div>' +
+        '<div class="hero__stage" data-par="-0.1">' +
+          '<a class="hero__shot hero__shot--back" href="/product/' + esc(heroBack.slug) + '" data-link aria-label="' + esc(heroBack.name) + '">' +
+            '<img src="' + St.thumb(heroBack, 0) + '" alt="' + esc(heroBack.name) + '" fetchpriority="high" decoding="async" width="800" height="1200"></a>' +
+          '<a class="hero__shot hero__shot--front" href="/product/' + esc(heroFront.slug) + '" data-link aria-label="' + esc(heroFront.name) + '">' +
+            '<img src="' + St.thumb(heroFront, 0) + '" alt="' + esc(heroFront.name) + '" fetchpriority="high" decoding="async" width="800" height="1200">' +
+            '<span class="hero__tag">' + esc(heroFront.name) + ' · ' + pkr(St.priceOf(heroFront)) + '</span></a>' +
         '</div>' +
       '</div></div>' +
     '</section>' +
 
-    /* --- product mood immediately under the fold line --- */
-    '<section class="hero__peek">' +
-      '<div class="wrap" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">' +
-        '<p class="eyebrow" style="color:var(--blue-400)">In stock now</p>' +
-        '<a href="/shop" data-link style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--blue-300);font-weight:600">All denim</a>' +
-      '</div>' +
-      '<div class="wrap"><div class="rail rail--cards">' +
-        best.slice(0, 6).map(function (p) { return U.card(p, { nosizes: true }); }).join('') +
-      '</div></div>' +
-    '</section>' +
+    seam() +
 
-    /* --- shop by fit --- */
-    '<section class="sec sec--tight rv"><div class="wrap">' +
-      '<div class="sec__head"><h2 class="h-md">Shop by fit</h2><a href="/shop" data-link>All fits</a></div>' +
-      '<div class="rail rail--cards">' + fits.map(function (f) {
-        return '<a class="fitchip" href="/shop?fit=' + f.fit + '" data-link>' +
-          '<img src="' + f.img + '" alt="' + esc(U.fitLabel(f.fit)) + ' fit kids denim" loading="lazy" decoding="async" width="900" height="900">' +
-          '<b>' + U.fitLabel(f.fit) + '</b><i>' + esc(f.note) + '</i></a>';
+    /* ---------- choose the fit (interactive) ---------- */
+    '<section class="sec sec--tight rv" data-fitpick><div class="wrap">' +
+      '<div class="sec__head"><div><p class="eyebrow">Start here</p><h2 class="h-lg" style="margin-top:6px">Choose the fit</h2></div>' +
+      '<a href="/fit-finder" data-link>Fit finder</a></div>' +
+      '<div class="fittabs" role="tablist">' + fitKeys.map(function (k, i) {
+        return '<button role="tab" class="fittab' + (i ? '' : ' is-on') + '" data-fit="' + k + '" aria-selected="' + (i === 0) + '">' + esc(U.fitLabel(k)) + '</button>';
       }).join('') + '</div>' +
+      '<p class="fitline" data-fitline>' + esc((S.FIT_NOTES[fitKeys[0]] || {}).line || '') + '</p>' +
+      '<div class="rail rail--cards" data-fitrail></div>' +
     '</div></section>' +
 
-    /* --- new arrivals --- */
-    '<section class="sec rv"><div class="wrap">' +
-      '<div class="sec__head"><div><p class="eyebrow">Just landed</p><h2 class="h-lg" style="margin-top:6px">New Arrivals</h2></div>' +
-      '<a href="/collections/new-arrivals" data-link>See all</a></div>' +
-      grid(newest.slice(0, 4)) +
-    '</div></section>' +
-
-    /* --- editorial split --- */
-    '<section class="split split--rev rv" style="background:var(--paper-2)">' +
-      '<div class="split__media"><img src="assets/img/products/storm-rip-skinny-jean-2.jpg" alt="Close-up of Rivet Jr denim, showing a taped knee rip and inseam stitching" loading="lazy" decoding="async" width="900" height="1200"></div>' +
-      '<div class="split__body">' +
-        '<p class="eyebrow">The make</p>' +
-        '<h2 class="h-lg" style="margin-top:10px">' + esc(c.editorialTitle) + '</h2>' +
-        '<p style="margin-top:14px;color:var(--char-2);max-width:44ch">' + esc(c.editorialBody) + '</p>' +
-        '<ul class="specs">' +
-          '<li><b>01</b><p><strong>Reinforced knees</strong>A second denim panel bonded inside the knee, where kids jeans die first.</p></li>' +
-          '<li><b>02</b><p><strong>Adjustable waist</strong>Internal elastic tab from 5Y up, so one size lasts two growth spurts.</p></li>' +
-          '<li><b>03</b><p><strong>Bar-tacked stress points</strong>Pocket corners, fly and belt loops locked with copper thread.</p></li>' +
-        '</ul>' +
-        '<a class="btn btn--ghost" style="margin-top:24px" href="/about" data-link>How it is made</a>' +
-      '</div>' +
+    /* ---------- the first drop ---------- */
+    '<section class="drop rv">' +
+      '<div class="wrap"><div class="sec__head"><div><p class="eyebrow" style="color:var(--brass-lt)">The first drop</p>' +
+      '<h2 class="h-lg" style="margin-top:6px;color:#fff">' + all.length + ' pieces, one block</h2></div>' +
+      '<a href="/shop" data-link style="color:var(--blue-300)">See all</a></div></div>' +
+      '<div class="wrap"><div class="rail rail--cards">' +
+        all.map(function (p) { return U.card(p, { nosizes: true }); }).join('') +
+      '</div></div>' +
     '</section>' +
 
-    /* --- quote --- */
+    /* ---------- bundle ---------- */
+    (c.bundleActive ?
+    '<section class="bundle"><div class="wrap"><div class="bundle__in">' +
+      '<div class="bundle__copy">' +
+        '<p class="eyebrow" style="color:var(--brass-lt)">Launch offer</p>' +
+        '<h2 class="h-lg">' + esc(c.bundleTitle) + '</h2>' +
+        '<p>' + esc(c.bundleBody) + '</p>' +
+        '<div class="bundle__cta">' +
+          '<a class="btn btn--brass" href="/shop" data-link>Shop the bundle</a>' +
+          '<span class="bundle__note">Applies itself in the cart · mix any two styles</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="bundle__pics">' +
+        '<img src="assets/img/products/classic-indigo-slim-jean-1.jpg" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
+        '<img src="assets/img/products/shadow-denim-jogger-1.jpg" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
+        '<span class="bundle__plus">+</span>' +
+      '</div>' +
+    '</div></div></section>' : '') +
+
+    /* ---------- built for movement: the make, in three details ---------- */
+    '<section class="story rv"><div class="wrap">' +
+      '<p class="eyebrow">The make</p>' +
+      '<h2 class="h-lg" style="margin:8px 0 10px">' + esc(c.editorialTitle) + '</h2>' +
+      '<p class="story__lead">' + esc(c.editorialBody) + '</p>' +
+      '<div class="story__row">' +
+        '<figure><img src="assets/img/products/storm-rip-skinny-jean-2.jpg" alt="Taped knee rip and inseam stitching" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<figcaption><b>Knees</b>A second denim panel bonded inside, where kids jeans die first.</figcaption></figure>' +
+        '<figure><img src="assets/img/products/classic-indigo-slim-jean-1.jpg" alt="Waistband, belt loops and bar tacks" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<figcaption><b>Waist</b>Internal elastic tab from 5Y up, so one size lasts two growth spurts.</figcaption></figure>' +
+        '<figure><img src="assets/img/products/shadow-denim-jogger-3.jpg" alt="Back pockets and stitching" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<figcaption><b>Stitching</b>Pocket corners, fly and loops bar-tacked in copper thread.</figcaption></figure>' +
+      '</div>' +
+      '<a class="btn btn--ghost" style="margin-top:22px" href="/about" data-link>How it is made</a>' +
+    '</div></section>' +
+
     '<section class="quote rv"><p class="serif">' + c.quote + '</p></section>' +
 
-    /* --- washes --- */
+    /* ---------- moving wash selector ---------- */
+    '<section class="sec sec--tight rv">' +
+      '<div class="wrap"><div class="sec__head"><div><p class="eyebrow">Seven finishes</p>' +
+      '<h2 class="h-md" style="margin-top:6px">Shop by wash</h2></div><a href="/shop" data-link>All washes</a></div></div>' +
+      '<div class="washrail" role="list"><div class="washrail__track">' + washTrack + washTrack + '</div></div>' +
+    '</section>' +
+
+    /* ---------- lookbook ---------- */
     '<section class="sec sec--tight rv"><div class="wrap">' +
-      '<div class="sec__head"><h2 class="h-md">Three washes</h2><a href="/shop" data-link>Filter by wash</a></div>' +
-      '<div class="washband">' + washes.map(function (w) {
-        return '<a href="/collections/' + w.key + '" data-link>' +
-          '<img src="' + w.img + '" alt="' + esc(w.label) + ' kids denim" loading="lazy" decoding="async" width="900" height="1200">' +
-          '<span>' + esc(w.label) + '</span></a>';
-      }).join('') + '</div>' +
+      '<div class="sec__head"><div><p class="eyebrow">Up close</p><h2 class="h-md" style="margin-top:6px">The details</h2></div>' +
+      '<a href="/shop" data-link>Shop all</a></div>' +
+      '<div class="lb">' + look + '</div>' +
     '</div></section>' +
 
-    /* --- best sellers --- */
-    '<section class="sec rv"><div class="wrap">' +
-      '<div class="sec__head"><div><p class="eyebrow">Proven</p><h2 class="h-lg" style="margin-top:6px">Best Sellers</h2></div>' +
-      '<a href="/collections/best-sellers" data-link>See all</a></div>' +
-      grid(best.slice(0, 4)) +
+    seam() +
+
+    /* ---------- parent trust ---------- */
+    '<section class="sec sec--tight rv"><div class="wrap">' +
+      '<div class="sec__head"><h2 class="h-md">Buying for a child you cannot measure right now?</h2></div>' +
+      '<div class="ptrust">' +
+        '<a class="ptrust__c" href="/fit-finder" data-link><b>Fit finder</b><span>Five questions, a size and two or three pairs.</span></a>' +
+        '<a class="ptrust__c" href="https://wa.me/' + esc(c.whatsapp) + '?text=' + encodeURIComponent('Hi, sizing help please. My child is ') + '" target="_blank" rel="noopener"><b>WhatsApp sizing help</b><span>Send an age and height, we reply with the size.</span></a>' +
+        '<a class="ptrust__c" href="/shipping-returns" data-link><b>Wrong size? Exchange it</b><span>7 days, unworn with tags. We arrange pickup.</span></a>' +
+        '<a class="ptrust__c" href="/shipping-returns" data-link><b>Cash on delivery</b><span>Pay when it arrives, anywhere in Pakistan.</span></a>' +
+      '</div>' +
     '</div></section>' +
 
-    /* --- size confidence --- */
-    '<section class="sec sec--tight rv"><div class="wrap panel" style="padding:24px">' +
-      '<p class="eyebrow">Sizing</p>' +
-      '<h2 class="h-md" style="margin:8px 0 6px">Get the size right the first time</h2>' +
-      '<p class="small dim" style="max-width:46ch">Sized by age and matched to height and waist in centimetres. Between sizes, take the larger — every pair adjusts at the waist.</p>' +
-      '<div style="overflow-x:auto;margin-top:16px"><table class="sgtable"><thead><tr><th>Size</th><th>Age</th><th>Height cm</th><th>Waist cm</th></tr></thead><tbody>' +
-        S.SIZE_GUIDE.map(function (r) { return '<tr><td>' + r.size + '</td><td>' + r.age + '</td><td>' + r.height + '</td><td>' + r.waist + '</td></tr>'; }).join('') +
-      '</tbody></table></div>' +
-      '<button class="btn btn--ghost btn--sm" style="margin-top:16px" data-sizeguide="">Full size guide</button>' +
-    '</div></section>' +
+    '<div class="wrap">' + proofStrip() + '</div>' +
 
-    /* --- coming soon --- */
     '<section class="soon rv">' +
       '<p class="eyebrow" style="color:var(--brass-lt)">Next</p>' +
       '<h2 class="h-lg" style="margin-top:10px">' + esc(c.soonTitle) + '</h2>' +
       '<p>' + esc(c.soonBody) + '</p>' +
       '<div class="soon__row"><a href="/shop?gender=men" data-link>Men · Soon</a><a href="/shop?gender=women" data-link>Women · Soon</a></div>' +
-    '</section>' +
-
-    /* --- trust --- */
-    '<section class="trust">' +
-      '<div><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/></svg>' +
-        '<strong>Free over ' + pkr(c.freeShipOver) + '</strong><span>Flat ' + pkr(c.flatShipping) + ' below</span></div>' +
-      '<div><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4h-4"/></svg>' +
-        '<strong>7-day exchange</strong><span>Size swaps, no fuss</span></div>' +
-      '<div><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 4 6v6c0 4.4 3.2 8.2 8 9 4.8-.8 8-4.6 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>' +
-        '<strong>Cash on delivery</strong><span>Nationwide</span></div>' +
     '</section>';
 
     return {
       title: St.seo.title,
       desc: St.seo.description,
       html: html,
-      mount: function () { U.observeReveals(); }
+      mount: function (main) {
+        U.observeReveals();
+        parallax(main);
+        mountFitPick(main);
+        drawSeams(main);
+      }
     };
+  }
+
+  /* the fit tabs swap the rail in place — no page change */
+  function mountFitPick(main) {
+    var wrap = $('[data-fitpick]', main);
+    if (!wrap) return;
+    var rail = $('[data-fitrail]', wrap), line = $('[data-fitline]', wrap);
+    function show(fit) {
+      var list = St.query({ fit: [fit], sort: 'best' });
+      rail.innerHTML = list.length
+        ? list.map(function (p) { return U.card(p, { nosizes: true }); }).join('')
+        : '<p class="small dim" style="padding:12px 0">Nothing in this fit right now.</p>';
+      line.textContent = (S.FIT_NOTES[fit] || {}).line || '';
+      line.classList.remove('pulse'); void line.offsetWidth; line.classList.add('pulse');
+      rail.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+    wrap.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-fit]');
+      if (!t) return;
+      $$('.fittab', wrap).forEach(function (b) { b.classList.toggle('is-on', b === t); b.setAttribute('aria-selected', String(b === t)); });
+      show(t.dataset.fit);
+    });
+    show('skinny');
+  }
+
+  /* stitch dividers draw themselves in when they scroll into view */
+  function drawSeams(main) {
+    var nodes = $$('[data-seam]', main);
+    if (!nodes.length) return;
+    if (!('IntersectionObserver' in root)) { nodes.forEach(function (n) { n.classList.add('drawn'); }); return; }
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('drawn'); io.unobserve(e.target); } });
+    }, { threshold: .3 });
+    nodes.forEach(function (n) { io.observe(n); });
+  }
+
+  /* hero denim drifts slower than the page */
+  function parallax(main) {
+    var nodes = $$('[data-par]', main);
+    if (!nodes.length || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var ticking = false;
+    function frame() {
+      var y = root.scrollY;
+      nodes.forEach(function (n) {
+        if (y > root.innerHeight * 1.4) return;
+        n.style.transform = 'translate3d(0,' + (y * parseFloat(n.dataset.par)).toFixed(1) + 'px,0)';
+      });
+      ticking = false;
+    }
+    root.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; requestAnimationFrame(frame); }
+    }, { passive: true });
+    frame();
   }
 
   /* ============================ SHOP ============================ */
@@ -401,31 +505,46 @@
   }
 
   /* ============================ PRODUCT ============================ */
+  /* What each shot in the pack actually shows, so the gallery can label it. */
+  var SHOT_LABELS = ['Waist &amp; front', 'Fabric &amp; rip detail', 'Back &amp; pockets', 'Detail'];
+
+  function ageLineFor(size) {
+    for (var i = 0; i < S.SIZE_GUIDE.length; i++) {
+      var r = S.SIZE_GUIDE[i];
+      if (r.size === size) return 'Usually fits ' + r.age.replace(' yrs', '-year-olds').replace('–', '–') +
+        ' · ' + r.height + ' cm tall · ' + r.waist + ' cm waist';
+    }
+    return '';
+  }
+
   function product(ctx) {
     var p = St.product(ctx.params.slug);
     if (!p || p.active === false) return notFound();
     var wash = ctx.query.color && (p.colors || []).some(function (c) { return c.key === ctx.query.color; }) ? ctx.query.color : p.wash;
     var imgs = St.images(p, wash);
     var out = St.totalStock(p) === 0, off = St.discountPct(p), price = St.priceOf(p);
+    var note = S.FIT_NOTES[p.fit] || S.FIT_NOTES.slim;
     var also = St.query({ sort: 'best' }).filter(function (x) { return x.id !== p.id; });
     var look = also.filter(function (x) { return x.fit !== p.fit; }).slice(0, 4);
+    var midSize = S.KID_SIZES[3];
 
     var html = '<div class="wrap pdp">' +
       crumbs([['Home', '/'], ['Shop', '/shop'], [p.name, '']]) +
       '<div class="pdp__cols">' +
         '<div class="pdp__left">' +
           '<div class="gal">' +
-            '<div class="gal__track" data-gal tabindex="0" aria-label="Product images">' +
+            '<div class="gal__track" data-gal tabindex="0" aria-label="' + esc(p.name) + ' images">' +
               imgs.map(function (src, i) {
-                return '<img src="' + src + '" alt="' + esc(p.name + ' — view ' + (i + 1)) + '" ' +
-                  (i ? 'loading="lazy"' : 'fetchpriority="high"') + ' decoding="async" width="900" height="1125">';
+                return '<figure class="gal__slide"><img src="' + src + '" alt="' + esc(p.name + ' — ' + SHOT_LABELS[i].replace('&amp;', 'and')) + '" ' +
+                  (i ? 'loading="lazy"' : 'fetchpriority="high"') + ' decoding="async" width="800" height="1200">' +
+                  '<figcaption>' + SHOT_LABELS[i] + '</figcaption></figure>';
               }).join('') +
             '</div>' +
             '<div class="gal__dots" data-dots aria-hidden="true">' + imgs.map(function (_, i) { return '<i class="' + (i ? '' : 'is-on') + '"></i>'; }).join('') + '</div>' +
             '<button class="card__wish gal__wish' + (St.wished(p.id) ? ' is-on' : '') + '" data-wish="' + esc(p.id) + '" aria-pressed="' + St.wished(p.id) + '" aria-label="Save to wishlist">' + U.iconHeart(St.wished(p.id)) + '</button>' +
           '</div>' +
           '<div class="gal__thumbs" data-thumbs>' + imgs.map(function (src, i) {
-            return '<button class="' + (i ? '' : 'is-on') + '" data-th="' + i + '" aria-label="View image ' + (i + 1) + '"><img src="' + src + '" alt="" loading="lazy"></button>';
+            return '<button class="' + (i ? '' : 'is-on') + '" data-th="' + i + '" aria-label="View ' + SHOT_LABELS[i].replace('&amp;', 'and') + '"><img src="' + src + '" alt="" loading="lazy"></button>';
           }).join('') + '</div>' +
         '</div>' +
 
@@ -438,19 +557,26 @@
           '<p class="pdp__tax">Inclusive of all taxes · Free delivery over ' + pkr(St.content.freeShipOver) + '</p>' +
           '<p style="margin-top:14px;color:var(--char-2);font-size:14.5px">' + esc(p.description) + '</p>' +
 
+          '<div class="chiprow" aria-label="Best for">' +
+            '<span class="chiprow__lbl">Best for</span>' +
+            (p.bestFor || []).map(function (b) { return '<span class="usechip">' + esc(b) + '</span>'; }).join('') +
+          '</div>' +
+
           ((p.colors || []).length > 1 ? '<div class="block"><div class="block__lbl"><h3>Colour</h3><span data-colorname>' + esc(U.washLabel(wash)) + '</span></div>' +
             '<div class="swatches">' + p.colors.map(function (c) {
               return '<button class="swatch' + (c.key === wash ? ' is-on' : '') + '" data-color="' + esc(c.key) + '" aria-label="' + esc(c.name) + '" aria-pressed="' + (c.key === wash) + '"><i style="background:' + c.hex + '"></i></button>';
             }).join('') + '</div></div>' : '') +
 
+          /* size selector as woven waist tabs */
           '<div class="block"><div class="block__lbl"><h3>Size · Age</h3>' +
             '<button data-sizeguide="' + esc(p.slug) + '">Size guide</button></div>' +
-            '<div class="sizes" role="radiogroup" aria-label="Select size">' + S.KID_SIZES.map(function (s) {
-              var stk = +p.stock[s] || 0;
+            '<div class="sizes" role="radiogroup" aria-label="Select size">' + S.KID_SIZES.map(function (x) {
+              var stk = +p.stock[x] || 0;
               return '<button class="sizeopt' + (stk === 0 ? ' is-out' : stk <= 3 ? ' is-low' : '') + '" role="radio" aria-checked="false"' +
-                (stk === 0 ? ' aria-disabled="true" tabindex="-1"' : '') + ' data-size="' + s + '">' + s + '</button>';
+                (stk === 0 ? ' aria-disabled="true" tabindex="-1"' : '') + ' data-size="' + x + '">' +
+                '<span class="sizeopt__tab">' + x + '</span></button>';
             }).join('') + '</div>' +
-            '<p class="small dim" style="margin-top:9px" data-stockmsg>' + (out ? 'Sold out in every size — back soon.' : 'Select a size. True to age; between sizes, take the larger.') + '</p>' +
+            '<p class="agefit" data-agefit>' + (out ? 'Sold out in every size — back soon.' : ageLineFor(midSize) + ' · pick a size to confirm') + '</p>' +
           '</div>' +
 
           '<div class="pdp__actions">' +
@@ -460,6 +586,17 @@
               '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 15V4m0 0L8.5 7.5M12 4l3.5 3.5M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
           '</div>' +
           (out ? '<a class="btn btn--ghost btn--block" style="margin-top:10px" href="https://wa.me/' + esc(St.content.whatsapp) + '?text=' + encodeURIComponent('Notify me when ' + p.name + ' is back') + '" target="_blank" rel="noopener">Notify me on WhatsApp</a>' : '') +
+          '<a class="waline" href="https://wa.me/' + esc(St.content.whatsapp) + '?text=' + encodeURIComponent('Hi, sizing help for the ' + p.name + ' — my child is ') + '" target="_blank" rel="noopener">' +
+            '<svg viewBox="0 0 32 32" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.8 3 16c0 2.3.6 4.5 1.7 6.4L3 29l6.8-1.8c1.9 1 4 1.6 6.2 1.6 7.2 0 13-5.8 13-13S23.2 3 16 3Z"/></svg>' +
+            'Not sure of the size? Send us an age and height</a>' +
+
+          /* why this fit works */
+          '<section class="fitwhy">' +
+            '<p class="eyebrow">Why this fit works</p>' +
+            '<h2 class="h-sm" style="margin:8px 0 8px">' + esc(note.line) + '</h2>' +
+            '<p>' + esc(note.body) + '</p>' +
+            '<a class="linkline" href="/fit-finder" data-link style="display:inline-block;margin-top:14px">Try the fit finder</a>' +
+          '</section>' +
 
           '<div class="acc">' +
             '<details open><summary>Fabric &amp; care</summary><div class="acc__body"><dl>' +
@@ -472,10 +609,12 @@
               '<li>Delivery 2–4 days nationwide. Flat ' + pkr(St.content.flatShipping) + ', free over ' + pkr(St.content.freeShipOver) + '.</li>' +
               '<li>Cash on delivery available across Pakistan.</li>' +
               '<li>7-day size exchange, unworn with tags attached.</li></ul></div></details>' +
-            '<details><summary>Fit notes</summary><div class="acc__body">Sized by age and matched to height and waist. The waist adjusts internally from 5Y up. If your child is between two ages, take the larger — the tab takes up the slack now and the length lasts longer.</div></details>' +
+            '<details><summary>Sizing notes</summary><div class="acc__body">Sized by age and matched to height and waist. The waist adjusts internally from 5Y up. Between two ages, take the larger — the tab takes up the slack now and the length lasts longer.</div></details>' +
           '</div>' +
         '</div></div>' +
       '</div>' +
+
+      proofStrip(4) +
 
       '<section class="sec rv"><div class="sec__head"><h2 class="h-md">Complete the look</h2><a href="/shop" data-link>All denim</a></div>' +
         '<div class="rail rail--cards">' + look.map(function (x) { return U.card(x, { nosizes: true }); }).join('') + '</div></section>' +
@@ -511,6 +650,24 @@
     };
   }
 
+  /* ---------- proof ---------- */
+  var PROOF_ICONS = {
+    flag:  '<path d="M6 21V4m0 0h11l-2 4 2 4H6" />',
+    ruler: '<path d="M3 9h18v6H3zM7 9v3M11 9v4M15 9v3M19 9v4"/>',
+    swap:  '<path d="M4 8h13l-3-3M20 16H7l3 3"/>',
+    chat:  '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-5A8 8 0 1 1 21 12Z"/>',
+    wash:  '<path d="M4 7h16v12H4zM4 11h16M8 4v3M16 4v3"/>',
+    rivet: '<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4"/>'
+  };
+  function proofStrip(n) {
+    var items = S.PROOF.slice(0, n || S.PROOF.length);
+    return '<section class="proof rv"><div class="proof__grid">' + items.map(function (x) {
+      return '<div class="proof__i">' +
+        '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">' + (PROOF_ICONS[x.icon] || '') + '</svg>' +
+        '<div><strong>' + esc(x.title) + '</strong><span>' + esc(x.body) + '</span></div></div>';
+    }).join('') + '</div></section>';
+  }
+
   function mountPDP(main, p, wash) {
     var chosen = null;
     var track = $('[data-gal]', main), dots = $$('[data-dots] i', main), thumbs = $$('[data-th]', main);
@@ -530,7 +687,12 @@
         $$('.sizeopt', main).forEach(function (n) { n.classList.remove('is-on'); n.setAttribute('aria-checked', 'false'); });
         sz.classList.add('is-on'); sz.setAttribute('aria-checked', 'true'); chosen = sz.dataset.size;
         var left = +p.stock[chosen] || 0;
-        $('[data-stockmsg]', main).textContent = left <= 3 ? 'Only ' + left + ' left in ' + chosen + '.' : 'In stock in ' + chosen + ' · ships in 1–2 days.';
+        var af = $('[data-agefit]', main);
+        if (af) {
+          af.textContent = ageLineFor(chosen) + (left <= 3 ? ' · only ' + left + ' left' : '');
+          af.classList.remove('pulse'); void af.offsetWidth; af.classList.add('pulse');
+        }
+        sz.classList.remove('tap'); void sz.offsetWidth; sz.classList.add('tap');
         return;
       }
       var col = e.target.closest('[data-color]');
@@ -546,7 +708,11 @@
           return;
         }
         var r = St.addToCart(p, chosen, wash, 1);
-        if (r.ok) { U.toast('Added <b>' + esc(p.name) + '</b> · ' + chosen); U.openCart(); }
+        if (r.ok) {
+          U.rivetBurst(e.target.closest('[data-add]'));
+          U.toast('Added <b>' + esc(p.name) + '</b> · ' + chosen);
+          setTimeout(function () { U.openCart(); }, 260);
+        }
         else U.toast(r.msg, 'err');
         return;
       }
@@ -562,10 +728,175 @@
     var addBtn = $('.pdp__actions [data-add]', main);
     if (sticky && addBtn && 'IntersectionObserver' in root) {
       new IntersectionObserver(function (es) {
-        sticky.classList.toggle('is-on', !es[0].isIntersecting && es[0].boundingClientRect.top < 0);
+        var on = !es[0].isIntersecting && es[0].boundingClientRect.top < 0;
+        sticky.classList.toggle('is-on', on);
+        var wa = $('#wa', doc);
+        if (wa) wa.classList.toggle('is-tucked', on);
       }, { threshold: 0 }).observe(addBtn);
     }
     U.observeReveals(main);
+  }
+
+  /* ============================ FIT FINDER ============================ */
+  function parseRange(str) {
+    var m = String(str).split(/[–-]/);
+    return [parseFloat(m[0]), parseFloat(m[1] || m[0])];
+  }
+  function sizeForHeight(cm) {
+    for (var i = 0; i < S.SIZE_GUIDE.length; i++) {
+      var r = parseRange(S.SIZE_GUIDE[i].height);
+      if (cm >= r[0] && cm <= r[1]) return S.SIZE_GUIDE[i].size;
+    }
+    return cm < parseRange(S.SIZE_GUIDE[0].height)[0]
+      ? S.SIZE_GUIDE[0].size : S.SIZE_GUIDE[S.SIZE_GUIDE.length - 1].size;
+  }
+  function sizeForAge(age) {
+    for (var i = 0; i < S.SIZE_GUIDE.length; i++) {
+      var r = parseRange(S.SIZE_GUIDE[i].age.replace(' yrs', ''));
+      if (age >= r[0] && age <= r[1]) return S.SIZE_GUIDE[i].size;
+    }
+    return S.KID_SIZES[S.KID_SIZES.length - 1];
+  }
+
+  function recommend(a) {
+    var byH = a.height ? sizeForHeight(a.height) : null;
+    var byA = sizeForAge(a.age);
+    var size = byH || byA;
+    var conflict = byH && byH !== byA;
+
+    var scored = St.query({ sort: 'best' }).map(function (p) {
+      var note = S.FIT_NOTES[p.fit] || {}, sc = 0, why = [];
+      if (a.fit && a.fit !== 'any') {
+        if (p.fit === a.fit) { sc += 5; why.push('the ' + U.fitLabel(p.fit).toLowerCase() + ' leg you asked for'); }
+        else sc -= 1;
+      }
+      if ((note.build || []).indexOf(a.build) > -1) { sc += 3; if (a.fit === 'any') why.push('cut for a ' + a.build + ' build'); }
+      else sc -= 4;
+      var hits = (p.bestFor || []).filter(function (b) { return a.uses.indexOf(b) > -1; });
+      sc += hits.length * 2;
+      if (hits.length) why.push('made for ' + hits.join(' and ').toLowerCase());
+      var stock = +p.stock[size] || 0;
+      if (stock <= 0) sc -= 12; else if (stock <= 3) sc += 1; else sc += 4;
+      if ((p.collections || []).indexOf('best-sellers') > -1) sc += 1;
+      return { p: p, sc: sc, why: why, stock: stock };
+    }).filter(function (x) { return x.stock > 0; })
+      .sort(function (x, y) { return y.sc - x.sc; });
+
+    return { size: size, byAge: byA, byHeight: byH, conflict: conflict, picks: scored.slice(0, 3) };
+  }
+
+  var FF_STEPS = [
+    { key: 'age', q: 'Who are we buying for?', hint: 'Their age in years.',
+      opts: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(function (n) { return { v: n, l: n + 'Y' }; }) },
+    { key: 'height', q: 'How tall are they?', hint: 'Roughly is fine — it beats age for getting the size right.',
+      opts: [{ v: 0, l: 'Not sure' }, { v: 103, l: 'Under 107 cm' }, { v: 110, l: '107–114' }, { v: 117, l: '114–120' },
+             { v: 126, l: '120–132' }, { v: 137, l: '132–142' }, { v: 147, l: '142–152' }, { v: 157, l: '152–162' }] },
+    { key: 'build', q: 'How would you describe their build?', hint: 'This decides how close the leg should be.',
+      opts: [{ v: 'slim', l: 'Slim' }, { v: 'average', l: 'Average' }, { v: 'healthy', l: 'Healthy' }] },
+    { key: 'fit', q: 'Any fit they prefer?', hint: 'Pick one, or let us choose.',
+      opts: [{ v: 'any', l: 'Let us choose' }, { v: 'skinny', l: 'Skinny' }, { v: 'slim', l: 'Slim' },
+             { v: 'straight', l: 'Straight' }, { v: 'jogger', l: 'Jogger' }] },
+    { key: 'uses', q: 'What are they mostly for?', hint: 'Choose as many as you like.', multi: true,
+      opts: S.USES.map(function (u) { return { v: u.label, l: u.label }; }) }
+  ];
+
+  function fitFinder() {
+    return {
+      title: 'Fit Finder — get the size right first time | Rivet & Co.',
+      desc: 'Answer five quick questions about age, height, build and use, and we will recommend the right Rivet Jr size and two or three styles.',
+      html: '<div class="wrap pagehead">' + crumbs([['Home', '/'], ['Fit finder', '']]) +
+        '<p class="eyebrow">' + esc(S.LINE) + '</p>' +
+        '<h1 class="h-lg">Fit finder</h1>' +
+        '<p>Five questions, about thirty seconds. We will tell you the size and the two or three pairs worth buying.</p></div>' +
+        '<div class="wrap ff" data-ff><div class="ff__bar"><i data-ffbar style="width:0%"></i></div>' +
+        '<div data-ffbody></div></div>',
+      mount: function (main) { mountFF(main); }
+    };
+  }
+
+  function mountFF(main) {
+    var a = { age: null, height: null, build: null, fit: null, uses: [] };
+    var step = 0;
+    var body = $('[data-ffbody]', main), bar = $('[data-ffbar]', main);
+
+    function draw() {
+      bar.style.width = Math.round((step / FF_STEPS.length) * 100) + '%';
+      if (step >= FF_STEPS.length) return results();
+      var st = FF_STEPS[step];
+      var val = a[st.key];
+      body.innerHTML =
+        '<div class="ff__step">' +
+          '<p class="ff__count">Question ' + (step + 1) + ' of ' + FF_STEPS.length + '</p>' +
+          '<h2 class="h-md">' + esc(st.q) + '</h2>' +
+          '<p class="ff__hint">' + esc(st.hint) + '</p>' +
+          '<div class="ff__opts">' + st.opts.map(function (o) {
+            var on = st.multi ? val.indexOf(o.v) > -1 : val === o.v;
+            return '<button class="ff__opt' + (on ? ' is-on' : '') + '" data-v="' + esc(String(o.v)) + '" aria-pressed="' + on + '">' + esc(o.l) + '</button>';
+          }).join('') + '</div>' +
+          '<div class="ff__nav">' +
+            (step ? '<button class="btn btn--ghost btn--sm" data-back>Back</button>' : '<span></span>') +
+            (st.multi ? '<button class="btn btn--sm" data-next' + (val.length ? '' : ' disabled') + '>See results</button>' : '') +
+          '</div>' +
+        '</div>';
+    }
+
+    function results() {
+      var r = recommend(a);
+      bar.style.width = '100%';
+      var picks = r.picks;
+      body.innerHTML =
+        '<div class="ff__result">' +
+          '<p class="ff__count">Recommendation</p>' +
+          '<h2 class="h-lg">Size ' + esc(r.size) + '</h2>' +
+          '<p class="ff__hint">' + esc(ageLineFor(r.size)) + '</p>' +
+          (r.conflict ? '<p class="ff__flag">Their height suggests <b>' + esc(r.byHeight) + '</b> while their age suggests <b>' + esc(r.byAge) + '</b>. We have gone with height, and the waist adjusts either way.</p>' : '') +
+          (picks.length
+            ? '<div class="ff__picks">' + picks.map(function (x, i) {
+                return '<article class="ffpick">' +
+                  '<a href="/product/' + esc(x.p.slug) + '" data-link><img src="' + St.thumb(x.p, 0) + '" alt="' + esc(x.p.name) + '" loading="lazy" width="800" height="1200"></a>' +
+                  '<div><p class="ffpick__rank">' + (i ? 'Also good' : 'Best match') + '</p>' +
+                  '<a href="/product/' + esc(x.p.slug) + '" data-link><h3 class="h-sm">' + esc(x.p.name) + '</h3></a>' +
+                  '<p class="ffpick__why">' + esc(x.why.length ? x.why.join(', ') : 'in stock in ' + r.size + ' and cut for their build') + '</p>' +
+                  '<p class="ffpick__price">' + pkr(St.priceOf(x.p)) + ' · ' + (x.stock <= 3 ? 'only ' + x.stock + ' left in ' + r.size : 'in stock in ' + r.size) + '</p>' +
+                  '<button class="btn btn--sm" data-ffadd="' + esc(x.p.slug) + '" data-ffsize="' + esc(r.size) + '">Add ' + esc(r.size) + ' to cart</button>' +
+                  '</div></article>';
+              }).join('') + '</div>'
+            : '<p class="ff__flag">Nothing is in stock in ' + esc(r.size) + ' right now. Message us on WhatsApp and we will tell you when it lands.</p>') +
+          '<div class="ff__again">' +
+            '<button class="btn btn--ghost btn--sm" data-restart>Start again</button>' +
+            '<a class="btn btn--ghost btn--sm" href="/shop" data-link>Browse everything</a>' +
+          '</div>' +
+        '</div>';
+    }
+
+    main.addEventListener('click', function (e) {
+      var o = e.target.closest('.ff__opt');
+      if (o) {
+        var st = FF_STEPS[step], raw = o.dataset.v;
+        var v = (st.key === 'age' || st.key === 'height') ? +raw : raw;
+        if (st.multi) {
+          var i = a.uses.indexOf(v);
+          if (i > -1) a.uses.splice(i, 1); else a.uses.push(v);
+          draw();
+        } else {
+          a[st.key] = (st.key === 'height' && v === 0) ? null : v;
+          step++; draw();
+        }
+        return;
+      }
+      if (e.target.closest('[data-back]')) { step = Math.max(0, step - 1); draw(); return; }
+      if (e.target.closest('[data-next]')) { step++; draw(); return; }
+      if (e.target.closest('[data-restart]')) { a = { age: null, height: null, build: null, fit: null, uses: [] }; step = 0; draw(); return; }
+      var add = e.target.closest('[data-ffadd]');
+      if (add) {
+        var p = St.product(add.dataset.ffadd);
+        var res = St.addToCart(p, add.dataset.ffsize, null, 1);
+        if (res.ok) { U.rivetBurst(add); U.toast('Added <b>' + esc(p.name) + '</b> · ' + add.dataset.ffsize); setTimeout(U.openCart, 300); }
+        else U.toast(res.msg, 'err');
+      }
+    });
+
+    draw();
   }
 
   /* ============================ CART PAGE ============================ */
@@ -586,7 +917,8 @@
           }).join('') + '</div>' +
           '<aside class="panel" style="align-self:start"><h3>Summary</h3>' +
             '<div class="sums"><div><span>Subtotal</span><span>' + pkr(t.sub) + '</span></div>' +
-            (t.discount ? '<div class="disc"><span>Discount</span><span>−' + pkr(t.discount) + '</span></div>' : '') +
+            (t.bundle ? '<div class="disc"><span>' + esc(St.content.bundleTitle) + '</span><span>−' + pkr(t.bundle) + '</span></div>' : '') +
+            (t.discount - t.bundle > 0 ? '<div class="disc"><span>Discount</span><span>−' + pkr(t.discount - t.bundle) + '</span></div>' : '') +
             '<div><span>Delivery</span><span>' + (t.shipping ? pkr(t.shipping) : 'Free') + '</span></div>' +
             '<div class="tot"><span>Total</span><span>' + pkr(t.total) + '</span></div></div>' +
             '<a class="btn btn--block" href="/checkout" data-link>Checkout</a>' +
@@ -666,7 +998,8 @@
               '<span>' + pkr(l.price * l.qty) + '</span></div>';
           }).join('') +
           '<div class="sums" style="margin-top:14px"><div><span>Subtotal</span><span>' + pkr(t.sub) + '</span></div>' +
-          (t.discount ? '<div class="disc"><span>Discount</span><span>−' + pkr(t.discount) + '</span></div>' : '') +
+          (t.bundle ? '<div class="disc"><span>' + esc(St.content.bundleTitle) + '</span><span>−' + pkr(t.bundle) + '</span></div>' : '') +
+          (t.discount - t.bundle > 0 ? '<div class="disc"><span>Discount</span><span>−' + pkr(t.discount - t.bundle) + '</span></div>' : '') +
           '<div><span>Delivery</span><span>' + (t.shipping ? pkr(t.shipping) : 'Free') + '</span></div>' +
           '<div class="tot"><span>Total</span><span>' + pkr(t.total) + '</span></div></div></aside>' +
         '</div></div>',
@@ -829,7 +1162,7 @@
 
   root.Pages = {
     home: home, shop: shop, product: product, cart: cartPage, wishlist: wishlist,
-    checkout: checkout, orderConfirmed: orderConfirmed, account: account,
+    checkout: checkout, orderConfirmed: orderConfirmed, account: account, fitFinder: fitFinder,
     sizeGuide: sizeGuidePage, shipping: shippingPage, about: about, notFound: notFound
   };
 })(window, document);

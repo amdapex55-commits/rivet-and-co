@@ -161,19 +161,43 @@
     db.coupons.forEach(function (x) { if (x.active && x.code.toUpperCase() === String(code).toUpperCase()) c = x; });
     return c;
   }
+  /* Launch bundle: the N cheapest units together cost a flat price.
+     Applied automatically, and stacked before any coupon. */
+  function bundleDiscount() {
+    var c = db.content;
+    if (!c.bundleActive) return { amount: 0, short: c.bundleQty || 2 };
+    var qty = c.bundleQty || 2, flat = c.bundlePrice || 0;
+    var units = [];
+    db.cart.forEach(function (l) {
+      for (var i = 0; i < l.qty; i++) units.push(l.price);
+    });
+    if (units.length < qty) return { amount: 0, short: qty - units.length };
+    units.sort(function (a, b) { return a - b; });
+    var sets = Math.floor(units.length / qty), amount = 0;
+    for (var s = 0; s < sets; s++) {
+      var chunk = units.slice(s * qty, s * qty + qty);
+      var full = chunk.reduce(function (a, b) { return a + b; }, 0);
+      if (full > flat) amount += full - flat;
+    }
+    return { amount: amount, short: 0, sets: sets };
+  }
+
   function totals(code) {
     var sub = db.cart.reduce(function (a, l) { return a + l.price * l.qty; }, 0);
-    var c = findCoupon(code), discount = 0, freeShip = false, err = null;
+    var bundle = bundleDiscount();
+    var c = findCoupon(code), discount = bundle.amount, freeShip = false, err = null;
+    var afterBundle = sub - bundle.amount;
     if (code && !c) err = 'That code is not valid.';
     if (c) {
-      if (sub < (c.min || 0)) { err = 'Spend ' + pkr(c.min) + ' to use ' + c.code + '.'; c = null; }
-      else if (c.type === 'percent') discount = Math.round(sub * c.value / 100);
-      else if (c.type === 'fixed') discount = Math.min(c.value, sub);
+      if (afterBundle < (c.min || 0)) { err = 'Spend ' + pkr(c.min) + ' to use ' + c.code + '.'; c = null; }
+      else if (c.type === 'percent') discount += Math.round(afterBundle * c.value / 100);
+      else if (c.type === 'fixed') discount += Math.min(c.value, afterBundle);
       else if (c.type === 'shipping') freeShip = true;
     }
     var over = db.content.freeShipOver, flat = db.content.flatShipping;
     var shipping = (sub - discount) >= over || freeShip || sub === 0 ? 0 : flat;
-    return { sub: sub, discount: discount, shipping: shipping, total: Math.max(0, sub - discount + shipping),
+    return { sub: sub, discount: discount, bundle: bundle.amount, bundleShort: bundle.short,
+             shipping: shipping, total: Math.max(0, sub - discount + shipping),
              coupon: c, err: err, toFree: Math.max(0, over - (sub - discount)) };
   }
 
@@ -332,6 +356,7 @@
     products: products, product: product, productById: productById, query: query,
     images: images, thumb: thumb, totalStock: totalStock, priceOf: priceOf, discountPct: discountPct,
     addToCart: addToCart, setQty: setQty, removeLine: removeLine, clearCart: clearCart,
+    bundleDiscount: bundleDiscount,
     cartCount: cartCount, totals: totals, findCoupon: findCoupon,
     wished: wished, toggleWish: toggleWish,
     placeOrder: placeOrder, myOrders: myOrders, stats: stats,

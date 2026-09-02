@@ -139,10 +139,11 @@
   doc.addEventListener('click', function (e) {
     var a = e.target.closest('a[data-link]');
     if (!a) return;
-    var href = a.getAttribute('href');
-    if (!href || href.charAt(0) !== '/' || e.metaKey || e.ctrlKey || e.shiftKey ||
-        e.button === 1 || a.target === '_blank') return;
-    var p = a.pathname || href;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1 || a.target === '_blank') return;
+    /* works for "/shop", "shop" and "/rivet-and-co/shop" alike: route off the
+       resolved path, so the markup can stay base-relative */
+    if (a.origin !== location.origin) return;
+    var p = a.pathname;
     if (BASE && p.indexOf(BASE) === 0) p = p.slice(BASE.length) || '/';
     e.preventDefault();
     U.closeOverlay();

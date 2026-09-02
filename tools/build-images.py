@@ -63,16 +63,34 @@ def trim_white(im):
 
 
 def backdrop(im):
-    """Most common colour in a thin ring around the edge = the paper backdrop."""
-    small = im.convert('RGB').resize((60, 90))
-    px = small.load()
-    ring = []
-    for x in range(60):
-        ring += [px[x, 0], px[x, 89]]
-    for y in range(90):
-        ring += [px[0, y], px[59, y]]
-    ring = [(r // 6 * 6, g // 6 * 6, b // 6 * 6) for r, g, b in ring]
-    return Counter(ring).most_common(1)[0][0]
+    """The paper the garment is lying on.
+
+    Sampling a full border ring picks up the garment on tight crops, which gave
+    grey pads under the dark washes. The corners of a flat-lay are backdrop far
+    more reliably, and the backdrop is always the lighter of the two, so we take
+    the corner patches and keep only the light pixels.
+    """
+    rgb = im.convert('RGB')
+    w, h = rgb.size
+    cw, ch = max(2, w // 8), max(2, h // 8)
+    patches = [
+        rgb.crop((0, 0, cw, ch)),
+        rgb.crop((w - cw, 0, w, ch)),
+        rgb.crop((0, h - ch, cw, h)),
+        rgb.crop((w - cw, h - ch, w, h)),
+    ]
+    px = []
+    for pt in patches:
+        d = pt.resize((16, 16)).tobytes()
+        px += [tuple(d[i:i + 3]) for i in range(0, len(d), 3)]
+    light = [c for c in px if min(c) > 150]
+    if len(light) < len(px) * 0.15:
+        # very tight crop: fall back to the lightest decile of the whole frame
+        d = rgb.resize((40, 60)).tobytes()
+        allpx = sorted((tuple(d[i:i + 3]) for i in range(0, len(d), 3)), key=lambda c: sum(c))
+        light = allpx[int(len(allpx) * 0.9):] or allpx[-10:]
+    light.sort(key=lambda c: sum(c))
+    return light[len(light) // 2]
 
 
 def normalise(path, dest):

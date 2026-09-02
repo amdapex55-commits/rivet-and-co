@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /rivet-and-co/admin
+Disallow: /rivet-and-co/checkout
+Disallow: /rivet-and-co/cart
+Sitemap: https://amdapex55-commits.github.io/rivet-and-co/sitemap.xml

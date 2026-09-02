@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Instrument+Serif:ital@1&display=swap">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#16223A}
+#s{position:absolute;inset:0}
+#s img{width:100%;height:100%;object-fit:cover}
+.mark{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.word{font:700 var(--fs,86px)/1 Archivo,Helvetica,Arial,sans-serif;letter-spacing:.19em;color:#F6F3ED;text-indent:.19em;text-shadow:0 3px 28px rgba(0,0,0,.45)}
+.word em{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-weight:400;color:#DDA766;letter-spacing:0}
+.tag{margin-top:22px;font:600 20px/1 Archivo,Helvetica,Arial,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#A6BDD6}
+.rule{width:120px;height:2px;background:linear-gradient(90deg,#B87333,#DDA766);margin:30px auto 0}
+.ico{position:absolute;inset:0;background:#16223A;display:grid;place-items:center}
+.ico.pad{padding:11%}
+.ico svg{width:100%;height:100%}
+.ico.sq{border-radius:22%}
+</style>
+<div id="root"></div>
+<script src="../public/assets/js/fabric.js"></script>
+<script>
+var p=new URLSearchParams(location.search), kind=p.get('k')||'og', R=document.getElementById('root');
+function rivet(pad){
+ return '<div class="ico'+(pad?' pad':'')+'"><svg viewBox="0 0 64 64">'+
+ '<defs><radialGradient id="r" cx="36%" cy="30%"><stop offset="0" stop-color="#F0C892"/><stop offset="55%" stop-color="#B87333"/><stop offset="100%" stop-color="#74400F"/></radialGradient></defs>'+
+ '<circle cx="32" cy="32" r="26" fill="url(#r)"/>'+
+ '<circle cx="32" cy="32" r="26" fill="none" stroke="#5C3512" stroke-opacity=".6" stroke-width="2"/>'+
+ '<circle cx="32" cy="32" r="15" fill="none" stroke="#F6EAD9" stroke-opacity=".45" stroke-width="2.2"/>'+
+ '<circle cx="32" cy="32" r="6.3" fill="#8A5423"/>'+
+ '<circle cx="24.5" cy="25" r="4.4" fill="#fff" fill-opacity=".38"/></svg></div>';
+}
+if(kind==='og'){
+ R.innerHTML='<div id="s"><img src="'+Fabric.url({shot:'texture',wash:'dark-indigo',seed:9,seam:false})+'"></div>'+
+  '<div class="mark"><div><div class="word">RIVET <em>&</em> CO.</div><div class="rule"></div><div class="tag">Denim that keeps up</div></div></div>';
+} else if(kind==='icon'){ R.innerHTML=rivet(false); }
+else if(kind==='maskable'){ R.innerHTML=rivet(true); }
+</script>

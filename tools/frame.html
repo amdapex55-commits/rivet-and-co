@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;background:#8a8a8a}iframe{border:0;display:block;background:#F6F3ED}</style>
+<body>
+<script>
+(function(){
+  var p=new URLSearchParams(location.search);
+  var w=+(p.get('w')||390), h=+(p.get('h')||2400), url=p.get('u')||'/';
+  try{ if(p.get('admin')) sessionStorage.setItem('rc:adm', String(Date.now())); }catch(e){}
+  try{ if(p.get('nosplash')) sessionStorage.setItem('rc:splash','1'); }catch(e){}
+  var f=document.createElement('iframe');
+  f.id='f'; f.style.cssText='width:'+w+'px;height:'+h+'px'; f.src=url;
+  f.onload=function(){
+    var act=p.get('act'); if(!act) return;
+    setTimeout(function(){
+      var W=f.contentWindow, D=f.contentDocument;
+      try{
+        if(act==='cart'){ var pr=W.Store.product('rivet-001-slim'); W.Store.addToCart(pr,'6Y'); var p2=W.Store.product('acid-07-straight'); W.Store.addToCart(p2,'9-10Y',null,2); W.UI.openCart(); }
+        if(act==='filters'){ D.querySelector('.filtbtn').click(); }
+        if(act==='search'){ W.UI.openSearch(); setTimeout(function(){var i=D.querySelector('#q'); i.value='jogger'; i.dispatchEvent(new Event('input',{bubbles:true}));},300); }
+        if(act==='nav'){ W.UI.openNav(); }
+        if(act==='quick'){ W.UI.quickAdd('yard-002-straight'); }
+        if(act==='sizeguide'){ W.UI.sizeGuide('rivet-001-slim'); }
+        if(act==='bottom'){ W.scrollTo(0, D.body.scrollHeight); }
+        if(act==='login'){ W.Admin.loginModal(); }
+      }catch(e){ document.title='ERR '+e.message; }
+    }, 900);
+  };
+  document.body.appendChild(f);
+})();
+</script>

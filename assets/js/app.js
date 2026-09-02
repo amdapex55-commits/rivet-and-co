@@ -126,7 +126,7 @@
     var here = routePath(), isHome = here === '/';
     var title = page && page.title ? page.title : seo.title;
     var desc = page && page.desc ? page.desc : seo.description;
-    var canonical = (seo.canonical || absUrl('/')).replace(/\/$/, '') + (isHome ? '/' : here);
+    var canonical = (seo.canonical || absUrl('/')).replace(/\/$/, '') + (isHome ? '/' : here + '/');
 
     doc.title = title;
     meta('meta[name="description"]', 'content', desc);

@@ -115,16 +115,6 @@
       '<div class="rail rail--cards" data-fitrail></div>' +
     '</div></section>' +
 
-    /* ---------- the first drop ---------- */
-    '<section class="drop rv">' +
-      '<div class="wrap"><div class="sec__head"><div><p class="eyebrow" style="color:var(--brass-lt)">The first drop</p>' +
-      '<h2 class="h-lg" style="margin-top:6px;color:#fff">' + all.length + ' pieces, one block</h2></div>' +
-      '<a href="/shop" data-link style="color:var(--blue-300)">See all</a></div></div>' +
-      '<div class="wrap"><div class="rail rail--cards">' +
-        all.map(function (p) { return U.card(p, { nosizes: true }); }).join('') +
-      '</div></div>' +
-    '</section>' +
-
     /* ---------- bundle ---------- */
     (c.bundleActive ?
     '<section class="bundle"><div class="wrap"><div class="bundle__in">' +
@@ -161,6 +151,16 @@
     '</div></section>' +
 
     '<section class="quote rv"><p class="serif">' + c.quote + '</p></section>' +
+
+    /* ---------- the first drop ---------- */
+    '<section class="drop rv">' +
+      '<div class="wrap"><div class="sec__head"><div><p class="eyebrow" style="color:var(--brass-lt)">The first drop</p>' +
+      '<h2 class="h-lg" style="margin-top:6px;color:#fff">' + all.length + ' pieces, one block</h2></div>' +
+      '<a href="/shop" data-link style="color:var(--blue-300)">See all</a></div></div>' +
+      '<div class="wrap"><div class="rail rail--cards">' +
+        all.map(function (p) { return U.card(p, { nosizes: true }); }).join('') +
+      '</div></div>' +
+    '</section>' +
 
     /* ---------- moving wash selector ---------- */
     '<section class="sec sec--tight rv">' +
@@ -217,9 +217,10 @@
     if (!wrap) return;
     var rail = $('[data-fitrail]', wrap), line = $('[data-fitline]', wrap);
     function show(fit) {
-      var list = St.query({ fit: [fit], sort: 'best' });
+      var list = St.query({ fit: [fit], sort: 'best' }).slice(0, 3);
       rail.innerHTML = list.length
-        ? list.map(function (p) { return U.card(p, { nosizes: true }); }).join('')
+        ? list.map(function (p) { return U.card(p, { nosizes: true }); }).join('') +
+          '<a class="fitmore" href="/shop?fit=' + fit + '" data-link>All ' + esc(U.fitLabel(fit).toLowerCase()) + ' →</a>'
         : '<p class="small dim" style="padding:12px 0">Nothing in this fit right now.</p>';
       line.textContent = (S.FIT_NOTES[fit] || {}).line || '';
       line.classList.remove('pulse'); void line.offsetWidth; line.classList.add('pulse');
@@ -506,7 +507,7 @@
 
   /* ============================ PRODUCT ============================ */
   /* What each shot in the pack actually shows, so the gallery can label it. */
-  var SHOT_LABELS = ['Waist &amp; front', 'Fabric &amp; rip detail', 'Back &amp; pockets', 'Detail'];
+  var SHOT_LABELS = ['Full front', 'Waist &amp; front', 'Fabric &amp; rip detail', 'Back &amp; pockets'];
 
   function ageLineFor(size) {
     for (var i = 0; i < S.SIZE_GUIDE.length; i++) {
@@ -908,7 +909,7 @@
           '<div>' + lines.map(function (l) {
             var p = St.productById(l.id);
             return '<div class="line" data-key="' + esc(l.key) + '">' +
-              '<a href="/product/' + esc(l.slug) + '" data-link><img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="" loading="lazy"></a>' +
+              '<a href="/product/' + esc(l.slug) + '" data-link aria-label="' + esc(l.name) + '"><img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="' + esc(l.name) + '" loading="lazy"></a>' +
               '<div><a href="/product/' + esc(l.slug) + '" data-link><p class="line__nm">' + esc(l.name) + '</p></a>' +
               '<p class="line__va">' + esc(l.size) + ' · ' + esc(U.washLabel(l.color)) + '</p>' +
               '<div class="line__bot"><div class="qty"><button data-qty="-1" aria-label="Decrease">−</button><span>' + l.qty + '</span><button data-qty="1" aria-label="Increase">+</button></div>' +
@@ -993,7 +994,7 @@
           St.db.cart.map(function (l) {
             var p = St.productById(l.id);
             return '<div class="orow"><span style="display:flex;gap:10px;align-items:center">' +
-              '<img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="" width="40" height="50" style="width:40px;height:50px;object-fit:cover;border-radius:4px" loading="lazy">' +
+              '<img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="' + esc(l.name) + '" width="40" height="50" style="width:40px;height:50px;object-fit:cover;border-radius:4px" loading="lazy">' +
               '<span><b style="display:block;font-size:13px">' + esc(l.name) + '</b><span class="small dim">' + esc(l.size) + ' × ' + l.qty + '</span></span></span>' +
               '<span>' + pkr(l.price * l.qty) + '</span></div>';
           }).join('') +

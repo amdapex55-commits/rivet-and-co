@@ -152,6 +152,7 @@
       sizeSet: 'kids',
       seoTitle: '', seoDesc: '',
       images: [
+        'assets/img/products/' + r.slug + '-front.jpg',
         'assets/img/products/' + r.slug + '-1.jpg',
         'assets/img/products/' + r.slug + '-2.jpg',
         'assets/img/products/' + r.slug + '-3.jpg'

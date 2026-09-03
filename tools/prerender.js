@@ -147,4 +147,17 @@ statics.forEach(([route, title, desc, main]) => {
 /* generic SPA fallback for anything not prerendered */
 fs.writeFileSync(path.join(PUB, '404.html'), SHELL);
 
-console.log('prerendered ' + n + ' routes + 404.html');
+/* sitemap is generated here so lastmod can never drift from the build */
+var today = new Date().toISOString().slice(0, 10);
+var urls = [['/', 1.0, 'daily'], ['/shop/', 0.9, 'daily'], ['/fit-finder/', 0.7, 'monthly'],
+            ['/size-guide/', 0.5, 'monthly'], ['/shipping-returns/', 0.4, 'monthly'], ['/about/', 0.5, 'monthly']];
+S.COLLECTIONS.forEach(function (c) { urls.push(['/collections/' + c.slug + '/', 0.8, 'weekly']); });
+S.PRODUCTS.forEach(function (p) { urls.push(['/product/' + p.slug + '/', 0.7, 'weekly']); });
+fs.writeFileSync(path.join(PUB, 'sitemap.xml'),
+  '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+  urls.map(function (u) {
+    return '  <url><loc>' + SITE + u[0] + '</loc><lastmod>' + today +
+      '</lastmod><changefreq>' + u[2] + '</changefreq><priority>' + u[1].toFixed(1) + '</priority></url>';
+  }).join('\n') + '\n</urlset>\n');
+
+console.log('prerendered ' + n + ' routes + 404.html + sitemap (' + urls.length + ' urls)');

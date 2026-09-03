@@ -125,8 +125,8 @@
     return '<article class="card' + (out ? ' is-out' : '') + '" data-slug="' + esc(p.slug) + '">' +
       '<div class="card__media">' +
         '<a class="card__link" href="' + href + '" data-link tabindex="-1" aria-hidden="true">' +
-          '<img class="a" src="' + imgs[0] + '" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
-          '<img class="b" src="' + imgs[1] + '" alt="" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<img class="a" src="' + imgs[0] + '" alt="' + esc(p.name + ' — ' + fitLabel(p.fit) + ' fit kids denim in ' + washLabel(p.wash)) + '" loading="lazy" decoding="async" width="800" height="1200">' +
+          '<img class="b" src="' + imgs[1] + '" alt="' + esc(p.name + ' — waist and front detail') + '" loading="lazy" decoding="async" width="800" height="1200">' +
         '</a>' +
         (badge ? '<div class="card__badges">' + badge + '</div>' : '') +
         '<button class="card__wish' + (St.wished(p.id) ? ' is-on' : '') + '" data-wish="' + esc(p.id) + '" ' +
@@ -213,7 +213,7 @@
     var p = St.product(slug); if (!p) return;
     var body =
       '<div style="display:flex;gap:14px;margin-bottom:18px">' +
-        '<img src="' + St.thumb(p, 0) + '" alt="" width="86" height="108" style="width:86px;height:108px;object-fit:cover;border-radius:6px" loading="lazy">' +
+        '<img src="' + St.thumb(p, 0) + '" alt="' + esc(p.name) + '" width="86" height="108" style="width:86px;height:108px;object-fit:cover;border-radius:6px" loading="lazy">' +
         '<div><h3 class="h-sm">' + esc(p.name) + '</h3>' +
         '<p class="small dim" style="margin-top:3px">' + esc(fitLabel(p.fit)) + ' · ' + esc(washLabel(p.wash)) + '</p>' +
         '<div class="card__price" style="margin-top:7px"><b>' + St.pkr(St.priceOf(p)) + '</b>' +
@@ -284,7 +284,7 @@
       var p = St.productById(l.id);
       var left = p ? (+p.stock[l.size] || 0) : 0;
       return '<div class="line" data-key="' + esc(l.key) + '">' +
-        '<a href="/product/' + esc(l.slug) + '" data-link><img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="' + esc(l.name) + '" loading="lazy"></a>' +
+        '<a href="/product/' + esc(l.slug) + '" data-link aria-label="' + esc(l.name) + '"><img src="' + (p ? St.thumb(p, 0, l.color) : '') + '" alt="' + esc(l.name) + '" loading="lazy"></a>' +
         '<div><a href="/product/' + esc(l.slug) + '" data-link><p class="line__nm">' + esc(l.name) + '</p></a>' +
         '<p class="line__va">' + esc(l.size) + ' · ' + esc(washLabel(l.color)) + (left <= 3 && left > 0 ? ' · <span style="color:var(--warn)">only ' + left + ' left</span>' : '') + '</p>' +
         '<div class="line__bot"><div class="qty">' +
@@ -448,7 +448,7 @@
   }
   function resultRow(p) {
     return '<a class="sres" href="/product/' + esc(p.slug) + '" data-link>' +
-      '<img src="' + St.thumb(p, 0) + '" alt="" loading="lazy">' +
+      '<img src="' + St.thumb(p, 0) + '" alt="' + esc(p.name) + '" loading="lazy">' +
       '<span><b>' + esc(p.name) + '</b><span>' + esc(fitLabel(p.fit)) + ' · ' + esc(washLabel(p.wash)) + ' · ' + St.pkr(St.priceOf(p)) + '</span></span></a>';
   }
 

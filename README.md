@@ -109,8 +109,8 @@ tag on every product page. Adult fits stay marked "Coming soon".
 
 ## Admin
 
-Triple-tap (or triple-click) the **RIVET & CO.** wordmark in the top-left within
-700ms. That reveals a password prompt — the gesture is discovery, not security.
+Triple-tap (or triple-click) the **RIVET & CO.** wordmark in the top-left,
+leaving under 1.2s between taps (`TAP_GAP` in `admin.js`). That reveals a password prompt — the gesture is discovery, not security.
 
 The shipped password is **not written down in this repository** — `store.js`
 carries only a salted hash of it. Change it in **Admin → Settings → Security**,
@@ -142,12 +142,16 @@ favicon/logo upload, password, JSON export/import, factory reset).
 
 ## Where the images come from
 
-**Product shots are real photography** — the Rivet Jr detail pack in
-`public/assets/img/products/`, three shots per style: waist front, fabric/rip
-detail, back waist.
+**Product shots are real photography** — four per style in
+`public/assets/img/products/`: full front (the card and hero image), waist
+front, fabric/rip detail, back waist.
 
-Run `python3 tools/build-images.py` to rebuild them from
-`~/Desktop/Rivet-Jr-Product-Detail-Pack`. The source PNGs carry baked-in white
+Run `python3 tools/build-images.py` to rebuild them. It reads the detail crops
+from `~/Desktop/Rivet-Jr-Product-Detail-Pack` and the full-length fronts from
+`~/Desktop/Rivet-Jr-Separate-Product-Images`. Fronts arrive square, so each one
+is scaled to put the garment at the same share of the 2:3 frame and centred on
+its own midpoint — nine photos then read as one lookbook rather than nine
+different zoom levels. The source PNGs carry baked-in white
 margins of varying size, so the script trims those, samples each photo's own
 cream backdrop, and centres the result on an 800x1200 canvas of that colour.
 Every product image ends up exactly 2:3 and band-free, which is what lets the

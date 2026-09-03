@@ -106,6 +106,9 @@
     current = { path: path, query: query };
 
     doc.body.classList.toggle('in-admin', !!page.admin);
+    /* a product page already has inline WhatsApp help and a sticky buy bar;
+       a third floating action in the same corner just fights them */
+    doc.body.classList.toggle('on-pdp', path.indexOf('/product/') === 0);
     $('#hdr').hidden = !!page.admin;
     $('#ftr').hidden = !!page.admin;
     $('#botnav').hidden = !!page.admin;
@@ -328,19 +331,32 @@
   function splash() {
     var el = $('#splash');
     var seen = false;
-    try { seen = sessionStorage.getItem('rc:splash') === '1' || localStorage.getItem('rc:splash-ever') === '1' && false; } catch (e) {}
+    try { seen = sessionStorage.getItem('rc:splash') === '1'; } catch (e) {}
     if (seen || routePath().indexOf('/admin') === 0) {
       el.remove();
       return Promise.resolve();
     }
     try { sessionStorage.setItem('rc:splash', '1'); } catch (e) {}
     doc.body.classList.add('no-scroll');
+
     return new Promise(function (res) {
-      setTimeout(function () {
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
         el.classList.add('is-out');
         doc.body.classList.remove('no-scroll');
-        setTimeout(function () { el.remove(); res(); }, 760);
-      }, 2000);
+        setTimeout(function () { el.remove(); res(); }, 520);
+      }
+      /* ceremony should never stand between an ad click and the first tap */
+      el.addEventListener('click', finish);
+      el.addEventListener('touchstart', finish, { passive: true });
+      doc.addEventListener('keydown', function k(e) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { doc.removeEventListener('keydown', k); finish(); }
+      });
+      setTimeout(function () { el.classList.add('is-skippable'); }, 650);
+      var timer = setTimeout(finish, 1700);
     });
   }
 

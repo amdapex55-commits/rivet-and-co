@@ -15,6 +15,7 @@ from collections import Counter
 from PIL import Image
 
 SRC = os.path.expanduser('~/Desktop/Rivet-Jr-Product-Detail-Pack')
+FRONTS = os.path.expanduser('~/Desktop/Rivet-Jr-Separate-Product-Images')
 OUT = os.path.join(os.path.dirname(__file__), '..', 'public', 'assets', 'img', 'products')
 TARGET = (800, 1200)          # 2:3
 INSET = 0.985                 # a hair of breathing room
@@ -106,6 +107,71 @@ def normalise(path, dest):
     return im.size, os.path.getsize(dest)
 
 
+def garment_box(im, bg, tol=26):
+    """Bounding box of everything that is not the paper backdrop."""
+    rgb = im.convert('RGB')
+    w, h = rgb.size
+    sw, sh = 120, int(120 * h / w) or 1
+    small = rgb.resize((sw, sh))
+    d = small.tobytes()
+    px = [tuple(d[i:i + 3]) for i in range(0, len(d), 3)]
+    xs, ys = [], []
+    for i, c in enumerate(px):
+        if abs(c[0] - bg[0]) + abs(c[1] - bg[1]) + abs(c[2] - bg[2]) > tol * 3:
+            xs.append(i % sw); ys.append(i // sw)
+    if not xs:
+        return (0, 0, w, h)
+    fx, fy = w / float(sw), h / float(sh)
+    return (int(min(xs) * fx), int(min(ys) * fy), int((max(xs) + 1) * fx), int((max(ys) + 1) * fy))
+
+
+def normalise_front(path, dest):
+    """Full-length fronts arrive square; the card frame is 2:3.
+
+    Rather than crop or pad by whatever each source happens to measure, every
+    garment is scaled so it occupies the same fraction of the frame height and
+    is centred on its own midpoint. All nine then read as one lookbook instead
+    of nine differently-zoomed photos.
+    """
+    im = trim_white(Image.open(path))
+    bg = backdrop(im)
+    gx0, gy0, gx1, gy1 = garment_box(im, bg)
+    gw, gh = max(1, gx1 - gx0), max(1, gy1 - gy0)
+    tw, th = TARGET
+    FILL = 0.86                      # garment height as a share of the frame
+
+    scale = (th * FILL) / float(gh)
+    if gw * scale > tw * 0.82:       # unusually wide (jogger, utility): fit width
+        scale = (tw * 0.82) / float(gw)
+
+    r = im.resize((max(1, round(im.width * scale)), max(1, round(im.height * scale))), Image.LANCZOS)
+    cx = int((gx0 + gx1) / 2 * scale)
+    cy = int((gy0 + gy1) / 2 * scale)
+
+    canvas = Image.new('RGB', TARGET, bg)
+    canvas.paste(r, (tw // 2 - cx, th // 2 - cy))
+    canvas.save(dest, 'JPEG', quality=82, optimize=True, progressive=True)
+    return os.path.getsize(dest)
+
+
+def build_fronts():
+    if not os.path.isdir(FRONTS):
+        print('no fronts folder at', FRONTS); return 0
+    total = 0
+    for folder, slug in PRODUCTS:
+        src = os.path.join(FRONTS, folder.lower(), '%s-full-front-1200.png' % slug)
+        if not os.path.exists(src):
+            alt = os.path.join(FRONTS, folder, '%s-full-front-1200.png' % slug)
+            src = alt if os.path.exists(alt) else None
+        if not src:
+            print('MISSING front for', slug); continue
+        dest = os.path.join(OUT, '%s-front.jpg' % slug)
+        size = normalise_front(src, dest)
+        total += size
+        print('%-34s front  %skb' % (slug, size // 1024))
+    return total
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     total = 0
@@ -119,6 +185,7 @@ def main():
             total += size
             if i == 1:
                 print('%-34s trimmed to %sx%s  %skb' % (slug, trimmed[0], trimmed[1], size // 1024))
+    total += build_fronts()
     print('total %.1f MB' % (total / 1048576.0))
 
 

@@ -44,8 +44,10 @@
   /* Triple-tap the wordmark.
      The window is measured from the PREVIOUS tap, not the first one — three
      deliberate taps are ~350-450ms apart, which never fit inside a single
-     700ms window counted from tap one. */
-  var TAP_GAP = 900;
+     700ms window counted from tap one. Kept generous: a hesitant tapper on a
+     phone can leave nearly a second between taps, and the worst case for being
+     too forgiving is a password prompt the user cancels. */
+  var TAP_GAP = 1200;
   function wireGesture() {
     var count = 0, last = 0, wm = $('#wordmark');
     if (!wm) return;
